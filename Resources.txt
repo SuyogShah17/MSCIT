@@ -1,3 +1,25 @@
+--------resources :-----------
+option  1:-- 
+login google classrooom for all resources of prac 1,2,3
+
+
+option 2:--
+Prac1a,b..all : multiple transform on one image (download any from internet
+prac2 : two images of panaroma
+prac3 : many images of chess board
+prac4 : 
+a - need image of face & haarcascade_frontalface_default.xml -this file
+b - stop sign image & stop_data.xml
+c - image of pedestrain walking
+d - two img lena1, lena2 & dlib-19.22.99-cp310-cp310-win_amd64.whl
+
+
+
+
+
+
+
+-----Prac1 all---
 import cv2
 import numpy as np
 
@@ -30,3 +52,54 @@ for name, result in transforms.items():
     cv2.destroyAllWindows()
 
 cv2.destroyAllWindows()
+
+
+------- Practical 2: Image Stitching ------------
+
+# Requires two overlapping images (e.g., 'img1.jpg', 'img2.jpg')
+import cv2, matplotlib.pyplot as plt
+
+# Use raw strings (r"...") for Windows paths to avoid escape sequence issues
+img1 = cv2.imread(r"E:\sem2\practicals\uttor_left.jpg")
+img2 = cv2.imread(r"E:\sem2\practicals\uttor_right.jpg") # Load images
+
+if img1 is None or img2 is None:
+    print("Error loading images. Check paths:\n",
+          r"E:\sem2\practicals\uttor_left.jpg", "\n",
+          r"E:\sem2\practicals\uttor_right.jpg")
+else:
+    # Corrected indentation (4 spaces)
+    s = cv2.Stitcher_create()
+    stat, stitched = s.stitch((img1, img2))
+    if stat == cv2.Stitcher_OK:
+        stitched_rgb = cv2.cvtColor(stitched, cv2.COLOR_BGR2RGB)
+        plt.imshow(stitched_rgb); plt.title('Stitched Image'); plt.axis('off'); plt.show()
+    else:
+        print(f"Stitching failed: {stat}. Ensure images overlap sufficiently.")
+
+-----------Practical 3-------------
+import cv2, glob, numpy as np
+# Calibration parameters and chessboard dimensions
+criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+dims = (7, 6)
+objp = np.zeros((dims[0]*dims[1], 3), np.float32)
+objp[:, :2] = np.mgrid[0:dims[0], 0:dims[1]].T.reshape(-1, 2)
+objpts, imgpts = [], []
+# Process all JPEG images in the folder
+for f in glob.glob("*.jpg"):
+    img = cv2.imread(f)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, corners = cv2.findChessboardCorners(gray, dims, None)
+    if ret:
+        objpts.append(objp)
+        corners = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+        imgpts.append(corners)
+        cv2.drawChessboardCorners(img, dims, corners, ret)
+        cv2.imshow("Calib", img); cv2.waitKey(500)
+cv2.destroyAllWindows()
+ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpts, imgpts, gray.shape[::-1], None, None)
+print("Camera Matrix:\n", mtx)
+print("Distortion Coefficients:\n", dist)
+
+-----------prac 4----------------
+
