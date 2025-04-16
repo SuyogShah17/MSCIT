@@ -1,0 +1,32 @@
+import cv2
+import numpy as np
+
+# Prac1: Load image from local file
+img = cv2.imread(r'E:\sem2\practicals\1.jpg')
+if img is None:
+    print("Image not found.")
+    exit()
+
+cv2.imshow("Original", img)
+cv2.waitKey(0)
+
+rows, cols = img.shape[:2]
+
+transforms = {
+    "Prac1A: Translated": cv2.warpAffine(img, np.float32([[1, 0, 100], [0, 1, 50]]), (cols, rows)),
+    "Prac1B: Scaled": cv2.resize(img, None, fx=1.5, fy=1.5),
+    "Prac1C: Shrunk": cv2.resize(img, None, fx=0.5, fy=0.5),
+    "Prac1D: Rotated": cv2.warpAffine(img, cv2.getRotationMatrix2D((cols/2, rows/2), 45, 1), (cols, rows)),
+    "Prac1G: Sheared X": cv2.warpAffine(img, np.float32([[1, 0.5, 0], [0, 1, 0]]), (int(cols * 1.5), rows)),
+    "Prac1H: Sheared Y": cv2.warpAffine(img, np.float32([[1, 0, 0], [0.5, 1, 0]]), (cols, int(rows * 1.5))),
+    "Prac1I: Reflected": cv2.flip(img, 1),
+    "Prac1J: Cropped": img[50:200, 100:300]
+}
+
+for name, result in transforms.items():
+    cv2.imshow(name, result)
+    if cv2.waitKey(0) == 27:  # Esc key to exit early
+        break
+    cv2.destroyAllWindows()
+
+cv2.destroyAllWindows()
