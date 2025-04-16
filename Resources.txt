@@ -4,24 +4,68 @@ login google classrooom for all resources of prac 1,2,3
 
 
 option 2:--
-Prac1a,b..all : multiple transform on one image (download any from internet
-prac2 : two overlaping images of panaroma
-prac3 : many images of chess board
-prac4 : 
-a - need image of face & haarcascade_frontalface_default.xml -this file
-b1 - stop sign image & stop_data.xml
-b2 - image of pedestrain walking
-b3 - two img lena1, lena2 & dlib-19.22.99-cp310-cp310-win_amd64.whl
-4c - image of people walking 
-4d +5b - image of someones face & dlib-19.22.99-cp310-cp310-win_amd64. whl+ video of faces, for counting faces.
-prac 5 a- 
 
-prac6 - one image to perform greyscale & colorization
+🧩 Practical 1 (Geometric Transformations)
+one image for transformations
 
+🧩 Practical 2 (Image Stitching)
+Needs overlapping views:
+left01.jpg to left14.jpg — Good set for stitching
+Resultant_Stitched_Panorama.jpg — Final output image
+Faces1.jpg — Optional matchable image if used
 
+🧩 Practical 3 (Camera Calibration)
+Needs chessboard images:
+uttor_left.jpg, uttor_right.jpg
+calibresult.jpg — Final result image (optional save)
+Folder possibly used: calibresult/, building/, align/
 
+🧩 Practical 4-A (Face Detection)
+face.jpg (probably saved as): use → Faces1.jpg, input_image2.jpg, or recognized.jpg
+haarcascade_frontalface_default.xml — Needed
 
+🧩 Practical 4-B-i (Object Detection with Custom XML)
+Image: STOP.jpg, Stop_Img.jpg
+XML: stop_data.xml
 
+🧩 Practical 4-B-ii (Line Detection)
+lines.jpg, highway.jpg
+
+🧩 Practical 4-B-iii (Circle Detection)
+coins.jpg
+
+🧩 Practical 4-C (Pedestrian Detection)
+pedestrian.jpg
+
+🧩 Practical 4-D (Face Recognition)
+Known: recognized.jpg
+Unknowns: recognized_1.jpg, recognized_2.jpg
+
+🧩 Practical 5-A (Tracking)
+tracking_input.mp4 — Likely your tracker/ folder or file inside it
+
+🧩 Practical 5-B (Face Counting)
+Same faces from recognized.jpg, or video in Resources/ or Faces1.jpg
+people_video.mp4 — Likely inside Resources/ or bda/
+
+🧩 Practical 6 (Image Colorization)
+Image: gray.jpg (not listed — might be lena.jpg used as grayscale)
+Files:
+colorization_deploy_v2.prototxt
+colorization_release_v2.caffemodel
+pts_in_hull.npy
+
+🧩 Practical 7 (Text Detection + OCR)
+STOP.jpg, testing.jpg, recognized.jpg — Can all be used for text
+Install Tesseract separately
+
+🧩 Practical 8 (3D from Stereo Images)
+cube1.jpg, cube2.jpg
+
+🧩 Practical 9 (Feature Matching with RANSAC)
+Similar views:
+recognized_1.jpg vs recognized_2.jpg
+left01.jpg vs left02.jpg (if good features exist)
 
 
 
