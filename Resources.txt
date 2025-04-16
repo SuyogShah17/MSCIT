@@ -9,9 +9,13 @@ prac2 : two overlaping images of panaroma
 prac3 : many images of chess board
 prac4 : 
 a - need image of face & haarcascade_frontalface_default.xml -this file
-b - stop sign image & stop_data.xml
-c - image of pedestrain walking
-d - two img lena1, lena2 & dlib-19.22.99-cp310-cp310-win_amd64.whl
+b1 - stop sign image & stop_data.xml
+b2 - image of pedestrain walking
+b3 - two img lena1, lena2 & dlib-19.22.99-cp310-cp310-win_amd64.whl
+4c - image of people walking 
+4d - image of someones face & dlib-19.22.99-cp310-cp310-win_amd64.whl
+prac 5 
+
 
 
 
