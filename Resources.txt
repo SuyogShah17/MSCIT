@@ -5,7 +5,7 @@ login google classrooom for all resources of prac 1,2,3
 
 option 2:--
 Prac1a,b..all : multiple transform on one image (download any from internet
-prac2 : two images of panaroma
+prac2 : two overlaping images of panaroma
 prac3 : many images of chess board
 prac4 : 
 a - need image of face & haarcascade_frontalface_default.xml -this file
@@ -56,10 +56,7 @@ cv2.destroyAllWindows()
 
 ------- Practical 2: Image Stitching ------------
 
-# Requires two overlapping images (e.g., 'img1.jpg', 'img2.jpg')
 import cv2, matplotlib.pyplot as plt
-
-# Use raw strings (r"...") for Windows paths to avoid escape sequence issues
 img1 = cv2.imread(r"E:\sem2\practicals\uttor_left.jpg")
 img2 = cv2.imread(r"E:\sem2\practicals\uttor_right.jpg") # Load images
 
@@ -101,5 +98,55 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpts, imgpts, gray.shape[::
 print("Camera Matrix:\n", mtx)
 print("Distortion Coefficients:\n", dist)
 
------------prac 4----------------
+--------------------------------prac 4-----------------------------
+# Practical 4-A to 4-D | Performed by Suyog Shah
+import cv2, numpy as np, face_recognition as fr, imutils
+from matplotlib import pyplot as plt
 
+# 4-A: Face Detection
+f=cv2.CascadeClassifier("E:/sem2/practicals/haarcascade_frontalface_default.xml")
+i=cv2.imread("E:/sem2/practicals/input_image2.jpg");g=cv2.cvtColor(i,cv2.COLOR_BGR2GRAY)
+for(x,y,w,h)in f.detectMultiScale(g,1.1,5,minSize=(40,40)):cv2.rectangle(i,(x,y),(x+w,y+h),(0,255,0),4)
+plt.imshow(cv2.cvtColor(i,cv2.COLOR_BGR2RGB));plt.title("4-A");plt.show()
+
+# 4-B-i: Object Detection (Stop sign or custom XML)
+c=cv2.CascadeClassifier("E:/sem2/practicals/stop_data.xml")
+i=cv2.imread("E:/sem2/practicals/image.jpg");g=cv2.cvtColor(i,cv2.COLOR_BGR2GRAY)
+d=c.detectMultiScale(g,minSize=(30,30));print("Detected:",len(d))
+for(x,y,w,h)in d:cv2.rectangle(i,(x,y),(x+w,y+h),(0,255,0),2)
+plt.imshow(cv2.cvtColor(i,cv2.COLOR_BGR2RGB));plt.title("4-B-i");plt.show()
+
+# 4-B-ii: Line Detection
+i=cv2.imread("E:/sem2/practicals/lines.jpg")
+g,e=cv2.cvtColor(i,cv2.COLOR_BGR2GRAY),cv2.Canny(i,50,150,apertureSize=3)
+l=cv2.HoughLinesP(e,1,np.pi/100,100,minLineLength=3,maxLineGap=5)
+if l is not None:
+ for pt in l: x1,y1,x2,y2=pt[0];cv2.line(i,(x1,y1),(x2,y2),(0,255,0),2)
+cv2.imshow("4-B-ii",i);cv2.waitKey(0)
+
+# 4-B-iii: Circle Detection
+i=cv2.imread("E:/sem2/practicals/coins.jpg");g=cv2.cvtColor(i,cv2.COLOR_BGR2GRAY)
+b=cv2.blur(g,(3,3))
+c=cv2.HoughCircles(b,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=1,maxRadius=35)
+if c is not None:
+ c=np.uint16(np.around(c))
+ for pt in c[0,:]: a,b,r=pt;cv2.circle(i,(a,b),r,(0,255,0),2)
+cv2.imshow("4-B-iii",i);cv2.waitKey(0)
+
+# 4-C: Pedestrian Detection
+hog=cv2.HOGDescriptor();hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+i=cv2.imread("E:/sem2/practicals/pedestrian.jpg");i=imutils.resize(i,width=min(400,i.shape[1]))
+for(x,y,w,h)in hog.detectMultiScale(i,winStride=(4,4),padding=(4,4),scale=1.05)[0]:cv2.rectangle(i,(x,y),(x+w,y+h),(0,0,255),2)
+cv2.imshow("4-C",i);cv2.waitKey(0)
+
+# 4-D: Face Recognition | Performed by Suyog Shah
+import cv2, face_recognition as fr
+i1=fr.load_image_file("E:/sem2/practicals/input.png");i2=fr.load_image_file("E:/sem2/practicals/input.png")
+e1,e2=fr.face_encodings(i1)[0],fr.face_encodings(i2)[0]
+print("4-D Match:",fr.compare_faces([e1],e2)[0])  # Practical 4-D
+for i,l,c in zip([i1,i2],[fr.face_locations(i1)[0],fr.face_locations(i2)[0]],[(0,255,0),(0,0,255)]):
+ i=cv2.rectangle(i,(l[3],l[0]),(l[1],l[2]),c,2);cv2.imshow("4-D",cv2.cvtColor(i,cv2.COLOR_RGB2BGR))
+cv2.waitKey(0);cv2.destroyAllWindows()
+
+
+--------------prac5---------------
