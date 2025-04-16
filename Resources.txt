@@ -228,8 +228,66 @@ cv2.imshow("Colorized Image", color_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
+---------prac7----------
+import cv2, pytesseract
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+img = cv2.imread(r"E:\sem2\practicals\22.jpg")
+if img is None: exit("Load Error")
+img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+gray = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+_, th = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+d = cv2.getStructuringElement(cv2.MORPH_RECT, (18, 18))
+dil = cv2.dilate(th, d, iterations=1)
+cnts, _ = cv2.findContours(dil, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+img2 = img.copy(); cfg = r'--oem 3 --psm 6'
+with open(r"E:\sem2\practicals\recognized_2.txt", "w") as f:
+    for c in cnts:
+        x, y, w, h = cv2.boundingRect(c)
+        f.write(pytesseract.image_to_string(img2[y:y+h, x:x+w], config=cfg).strip() + "\n")
+        cv2.rectangle(img2, (x, y), (x+w, y+h), (0, 255, 0), 2)
+print("OCR results saved")
+cv2.imshow("Processed", img2); cv2.waitKey(0); cv2.destroyAllWindows()
 
 
+-----------prac 8------------
+from PIL import Image
+import numpy as np, os
+
+def shift_image(img, dimg, s=10):
+    data = np.array(img.convert("RGBA"))
+    delta = ((np.array(dimg.convert("L")) / 255) * s).astype(int)
+    sh = np.zeros_like(data)
+    h, w, _ = data.shape
+    for y, row in enumerate(delta):
+        for x, dx in enumerate(row):
+            if 0 <= x + dx < w:
+                sh[y, x + dx] = data[y, x]
+    return Image.fromarray(sh.astype(np.uint8))
+
+print("Practical Performed By Suyog Shah")
+ip, dp = r"E:\sem2\practicals\cube1.jpeg", r"E:\sem2\practicals\cube2.jpeg"
+if os.path.exists(ip) and os.path.exists(dp):
+    img, dimg = Image.open(ip), Image.open(dp)
+    shift_image(img, dimg, 10).show()
+else:
+    print("Error: one or both image files are missing.")
+
+
+-----------prac 9-----------
+import cv2, numpy as np
+print("Practical Performed By Suyog Shah")
+i1 = cv2.imread("align.jpg"); i2 = cv2.imread("ref.jpg")
+if i1 is None or i2 is None: exit("Error: Could not load images.")
+g1 = cv2.cvtColor(i1, cv2.COLOR_BGR2GRAY); g2 = cv2.cvtColor(i2, cv2.COLOR_BGR2GRAY)
+orb = cv2.ORB_create(5000)
+kp1, d1 = orb.detectAndCompute(g1, None); kp2, d2 = orb.detectAndCompute(g2, None)
+ms = sorted(cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True).match(d1, d2), key=lambda m: m.distance)
+ms = ms[:int(len(ms) * 0.9)]
+p1 = np.float32([kp1[m.queryIdx].pt for m in ms]); p2 = np.float32([kp2[m.trainIdx].pt for m in ms])
+H, _ = cv2.findHomography(p1, p2, cv2.RANSAC)
+aligned = cv2.warpPerspective(i1, H, (g2.shape[1], g2.shape[0]))
+cv2.imwrite("output.jpg", aligned)
+cv2.imshow("Aligned Image", aligned); cv2.waitKey(0); cv2.destroyAllWindows()
 
 
 
