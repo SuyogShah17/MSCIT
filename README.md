@@ -1,2 +1,2 @@
-# MSCIT Practicals
-This repository contains practical and theory notes for MSCIT semester 2.
+cv ------
+colorization_release_v2 downlaod this file from classroom 
