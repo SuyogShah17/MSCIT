@@ -13,8 +13,10 @@ b1 - stop sign image & stop_data.xml
 b2 - image of pedestrain walking
 b3 - two img lena1, lena2 & dlib-19.22.99-cp310-cp310-win_amd64.whl
 4c - image of people walking 
-4d - image of someones face & dlib-19.22.99-cp310-cp310-win_amd64.whl
-prac 5 
+4d +5b - image of someones face & dlib-19.22.99-cp310-cp310-win_amd64. whl+ video of faces, for counting faces.
+prac 5 a- 
+
+prac6 - one image to perform greyscale & colorization
 
 
 
@@ -211,6 +213,20 @@ class EuclideanDistTracker:
 
 
 ---------------prac 6---------------
+import cv2
+img = cv2.imread(r'E:\sem2\practicals\1.jpg')
+if img is None:
+    print("Image not found.")
+    exit()
+cv2.imshow("Original Image", img)
+# Convert Color Image to Grayscale
+gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+cv2.imshow("Grayscale Image", gray_img)
+# Convert Grayscale Image to Color
+color_img = cv2.applyColorMap(gray_img, cv2.COLORMAP_JET)
+cv2.imshow("Colorized Image", color_img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 
 
