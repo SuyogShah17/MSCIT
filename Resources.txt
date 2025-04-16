@@ -143,17 +143,25 @@ i=cv2.imread("E:/sem2/practicals/pedestrian.jpg");i=imutils.resize(i,width=min(4
 for(x,y,w,h)in hog.detectMultiScale(i,winStride=(4,4),padding=(4,4),scale=1.05)[0]:cv2.rectangle(i,(x,y),(x+w,y+h),(0,0,255),2)
 cv2.imshow("4-C",i);cv2.waitKey(0)
 
-# 4-D: Face Recognition | Performed by Suyog Shah
+# Practical 4-D + 5-B | Face Detection (Image) + Face Count (Video) using face_recognition
 import cv2, face_recognition as fr
-i1=fr.load_image_file("E:/sem2/practicals/input.png");i2=fr.load_image_file("E:/sem2/practicals/input.png")
-e1,e2=fr.face_encodings(i1)[0],fr.face_encodings(i2)[0]
-print("4-D Match:",fr.compare_faces([e1],e2)[0])  # Practical 4-D
-for i,l,c in zip([i1,i2],[fr.face_locations(i1)[0],fr.face_locations(i2)[0]],[(0,255,0),(0,0,255)]):
- i=cv2.rectangle(i,(l[3],l[0]),(l[1],l[2]),c,2);cv2.imshow("4-D",cv2.cvtColor(i,cv2.COLOR_RGB2BGR))
-cv2.waitKey(0);cv2.destroyAllWindows()
+cap=cv2.VideoCapture("E:/sem2/practicals/people_video.mp4")  # Face video input
+while cap.isOpened():
+    ret, f = cap.read()
+    if not ret: break    
+    # ---- 4-D: Face Detection (via face_recognition) ----
+    rgb = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
+    faces = fr.face_locations(rgb)    
+    # ---- 5-B: Face Counting & Drawing Rectangles ----
+    for (t, r, b, l) in faces:
+        cv2.rectangle(f, (l, t), (r, b), (0, 255, 0), 2)
+    cv2.putText(f, f"Faces: {len(faces)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)    
+    cv2.imshow("4-D + 5-B Face Count", f)
+    if cv2.waitKey(1) == 27: break  # Esc to exit
+cap.release(); cv2.destroyAllWindows()
 
 
---------------prac5---------------
+--------------prac5a---------------
 # main.py  (file1) :
 import cv2; from tracker import EuclideanDistTracker
 print("Practical Performed By Suyog Shah")
@@ -200,3 +208,25 @@ class EuclideanDistTracker:
                 self.id_count += 1
         self.center_points = new_center_points.copy()
         return objects_bbs_ids
+
+
+---------------prac 6---------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
