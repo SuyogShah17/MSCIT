@@ -154,3 +154,49 @@ cv2.waitKey(0);cv2.destroyAllWindows()
 
 
 --------------prac5---------------
+# main.py  (file1) :
+import cv2; from tracker import EuclideanDistTracker
+print("Practical Performed By Suyog Shah")
+cap = cv2.VideoCapture(r"E:\sem2\practicals\journals\highway.mp4")
+tracker = EuclideanDistTracker(); object_detector = cv2.createBackgroundSubtractorMOG2(100, 60)
+
+while True:
+    ret, frame = cap.read(); 
+    if not ret: break
+    roi = frame[340:720, 500:800]
+    mask = object_detector.apply(roi)
+    _, mask = cv2.threshold(mask, 254, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    detections = [(x, y, w, h) for cnt in contours if cv2.contourArea(cnt) > 100 for x, y, w, h in [cv2.boundingRect(cnt)]]
+    for x, y, w, h in detections: cv2.rectangle(roi, (x, y), (x+w, y+h), (0, 255, 0), 2)
+    for x, y, w, h, id in tracker.update(detections):
+        cv2.putText(roi, str(id), (x, y-15), cv2.FONT_HERSHEY_PLAIN, 1, (255, 0, 0), 2)
+        cv2.rectangle(roi, (x, y), (x+w, y+h), (0, 255, 0), 3)
+    cv2.imshow("ROI", roi); cv2.imshow("Frame", frame)
+    if cv2.waitKey(30) == 27: break
+
+cap.release(); cv2.destroyAllWindows()
+
+# tracker.py (file2) : 
+import math
+class EuclideanDistTracker:
+    def __init__(self):
+        self.center_points = {}; self.id_count = 0
+    def update(self, objects_rect):
+        objects_bbs_ids = []
+        new_center_points = {}
+        for x, y, w, h in objects_rect:
+            cx, cy = x + w // 2, y + h // 2
+            same_object_detected = False
+            for id, pt in self.center_points.items():
+                if math.hypot(cx - pt[0], cy - pt[1]) < 25:
+                    new_center_points[id] = (cx, cy)
+                    objects_bbs_ids.append([x, y, w, h, id])
+                    same_object_detected = True
+                    break
+            if not same_object_detected:
+                new_center_points[self.id_count] = (cx, cy)
+                objects_bbs_ids.append([x, y, w, h, self.id_count])
+                self.id_count += 1
+        self.center_points = new_center_points.copy()
+        return objects_bbs_ids
