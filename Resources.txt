@@ -111,9 +111,7 @@ img1 = cv2.imread(r"E:\sem2\practicals\uttor_left.jpg")
 img2 = cv2.imread(r"E:\sem2\practicals\uttor_right.jpg") # Load images
 
 if img1 is None or img2 is None:
-    print("Error loading images. Check paths:\n",
-          r"E:\sem2\practicals\uttor_left.jpg", "\n",
-          r"E:\sem2\practicals\uttor_right.jpg")
+    print("Error loading images, check path")
 else:
     # Corrected indentation (4 spaces)
     s = cv2.Stitcher_create()
