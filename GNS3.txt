@@ -1,0 +1,1934 @@
+INDEX
+
+1- Configure IP SLA Feature.
+
+
+2- Configure IP SLA Tracking as Path Control Topology.
+
+
+3- Configure using as the AS_PATH Attribute. 
+
+
+4-Configuring IBGP as EBGP Sessions, Local Preference, as MED.
+
+
+5-Secure the Management Plane.
+
+
+6-Configure and Verify Path Control Using PBR.
+
+
+
+7-Inter VLAN Routing.
+
+
+
+8-Simulating MPLS Environment.
+
+
+
+9-Configure VRF-lite on routers.
+
+
+10-Simulating Static Routing.
+
+
+Practical 1
+
+Aim: Configure IP SLA Feature.
+Topology:
+
+Code and Output:
+Step-1) Prepare Routers: Configure router hostnames and interface addresses.
+
+Router R1:
+en
+conf t
+hostname R1
+int Loopback0
+description R1 LAN
+description Suyog Shah Sathaye College 04
+ip add 192.168.1.1 255.255.255.0
+int se2/0
+description R1-->ISP1 
+ip add 209.165.201.2 255.255.255.252
+clock rate 128000
+bandwidth 128
+no shut
+int se2/2
+description R1-->ISP2
+ip add 209.165.202.130 255.255.255.252
+bandwidth 128
+no shut
+
+Router R2:
+en
+conf t
+hostname ISP1
+int Loopback0
+description Simulated Internet Web Server
+description Suyog Shah Sathaye College 04
+ip add 209.165.200.254 255.255.255.255
+int Loopback1
+description ISP1 DNS Server
+ip add 209.165.201.30 255.255.255.255
+int se2/0
+description ISP1-->R1 
+ip add 209.165.201.1 255.255.255.252
+bandwidth 128
+no shut
+int se2/1
+description ISP1-->ISP2
+ip add 209.165.200.225 255.255.255.252
+clock rate 128000
+bandwidth 128
+no shut
+
+Router R3:
+en
+conf t
+hostname ISP2
+int Loopback1
+description Simulated Internet Web Server
+description Suyog Shah Sathaye College 04
+ip add 209.165.200.254 255.255.255.255
+int Loopback1
+description ISP2 DNS Server
+ip add 209.165.202.158 255.255.255.255
+int se2/1
+description ISP2-->R1 
+ip add 209.165.202.129 255.255.255.252
+clock rate 128000
+bandwidth 128
+no shut
+int se2/2
+description ISP2-->ISP1
+ip add 209.165.200.226 255.255.255.252
+bandwidth 128
+no shut
+
+Router R1(config-if):
+end
+show interfaces description | include up
+
+Router R2(config-if):
+end
+show interfaces description | include up
+
+Router R3(config-if):
+end
+show interfaces description | include up
+
+Router R1:
+en
+conf t
+ip route 0.0.0.0 0.0.0.0 209.165.201.1
+
+Router R2:
+en
+conf t
+router eigrp 1
+network 209.165.200.224 0.0.0.3
+network 209.165.201.0 0.0.0.31
+no auto-summary
+exit
+ip route 192.168.1.0 255.255.255.0 209.165.201.2
+
+Router R3:
+en
+conf t
+router eigrp 1
+network 209.165.200.224 0.0.0.3
+network 209.165.202.128 0.0.0.31
+no auto-summary
+exit
+ip route 192.168.1.0 255.255.255.0 209.165.202.130
+
+Step-2) Verify Server Reachability: Use ping and trace commands to verify connectivity to servers.
+
+Router R1(config):
+end
+tclsh
+foreach address {
+209.165.200.254
+209.165.201.30
+209.165.202.158
+} {
+ping $address source 192.168.1.1
+}
+
+
+foreach address {
+209.165.200.254
+209.165.201.30
+209.165.202.158
+} {
+trace $address source 192.168.1.1
+}
+
+
+Practical 2
+
+Aim: Configure IP SLA Tracking and Path Control Topology. 
+Topology:
+
+Code and Output:
+Step-3) Configure IP SLA Probes: Create ICMP echo probes to monitor connectivity to DNS servers.
+
+Router R1:
+en
+config t
+ip sla 11
+icmp-echo 209.165.201.30
+frequency 10
+exit
+ip sla schedule 11 life forever start-time now
+exit
+
+show ip sla configuration 11
+
+show ip sla statistics 11
+
+config t
+ip sla 22
+icmp-echo 209.165.202.158
+frequency 10
+exit
+ip sla schedule 22 life forever start-time now
+end
+
+show ip sla configuration 22
+
+show ip sla statistics 22
+
+Step-4) Configure Tracking Options: Remove the current default route and replace it with a floating static route. Configure tracking objects and verify routing table changes.
+Router R1:
+config t
+no ip route 0.0.0.0 0.0.0.0 209.165.201.1
+ip route 0.0.0.0 0.0.0.0 209.165.201.1 5
+exit
+
+show ip route | begin Gateway
+
+config t
+track 1 rtr 11 reachability
+delay down 10 up 1
+exit
+exit
+
+debug ip routing
+
+config t
+ip route 0.0.0.0 0.0.0.0 209.165.201.1 2 track 1
+
+track 2 rtr 22 reachability
+delay down 10 up 1
+exit
+exit
+
+debug ip routing
+
+config t
+ip route 0.0.0.0 0.0.0.0 209.165.202.129 3 track 2
+
+end
+show ip route | begin Gateway
+
+Step-5) Verify IP SLA Operation: Disable and re-enable interfaces in Router R2 to observe IP SLA tracking and verify routing table and IP SLA statistics.
+
+Router R2:
+config t
+interface loopback 1
+shutdown
+
+Router R1:
+show ip route | begin Gateway
+
+show ipsla statistics
+
+trace 209.165.200.254 source 192.168.1.1
+
+Router R2(config-if):
+no shutdown
+
+Router R1:
+show ipsla statistics
+
+show ip route | begin Gateway
+
+
+
+
+Practical 3
+
+Aim: Configure using the AS_PATH Attribute. 
+Topology:
+
+Code and Output:
+Step-1) Prepare Routers: Erase startup configurations and reload routers to clear previous configurations.
+Step-2) Configure Hostnames and Interface Addresses: Assign IP addresses to router interfaces and loopback interfaces.
+
+Router R1:
+en
+config t
+hostname Andheri
+interface Loopback0
+description Suyog Shah Sathaye College 04
+ip address 10.1.1.1 255.255.255.0
+exit
+interface Serial1/0
+ip address 192.168.1.5 255.255.255.252
+no shut
+end
+
+Router R2:
+en
+config t
+hostname Bandra
+interface Loopback0
+description Suyog Shah Sathaye College 04
+ip address 10.2.2.1 255.255.255.0
+exit
+interface Serial1/0
+ip address 192.168.1.6 255.255.255.252
+no shut
+interface Serial1/1
+ip address 172.24.1.17 255.255.255.252
+no shut
+end
+
+Router R3:
+en
+config t
+hostname Churchgate
+interface Loopback0
+description Suyog Shah Sathaye College 04
+ip address 10.3.3.1 255.255.255.0
+exit
+interface Serial1/1
+ip address 172.24.1.18 255.255.255.252
+no shut
+end
+
+Router R1:
+show interfaces description | include up
+
+Router R2:
+show interfaces description | include up
+
+Router R3:
+show interfaces description | include up
+
+Router R2:
+ping 192.168.1.5
+
+ping 172.24.1.18
+
+Step-3) Configure BGP: Set up BGP on routers, establish neighbor relationships, and advertise loopback networks.
+
+Router R1:
+config t
+router bgp 100
+neighbor 192.168.1.6 remote-as 300
+network 10.1.1.0 mask 255.255.255.0
+
+Router R2:
+config t
+router bgp 300
+neighbor 192.168.1.5 remote-as 100
+neighbor 172.24.1.18 remote-as 65000
+network 10.2.2.0 mask 255.255.255.0
+
+Router R3:
+config t
+router bgp 65000
+neighbor 172.24.1.17 remote-as 300
+network 10.3.3.0 mask 255.255.255.0
+
+Router R2(config-router):
+end
+show ip bgp neighbors
+
+Step-4) Remove Private AS: Use BGP commands to remove private AS numbers from being advertised.
+Router R1(config-router):
+end
+show ip route
+
+ping 10.3.3.1 source 10.1.1.1
+
+ping 10.3.3.1 source Lo0
+
+show ip bgp
+
+Step-5) Use AS_PATH Attribute to Filter Routes: Configure access lists and apply them to filter BGP routes based on AS_PATH.
+
+Router R2:
+config t
+ip as-path access-list 1 deny ^100$
+ip as-path access-list 1 permit .*
+
+router bgp 300
+neighbor 192.168.1.5 remove-private-as
+exit
+
+Router R1:
+show ip route
+
+Router R2(config):
+end
+show ip bgp regexp ^100$
+
+tclsh
+foreach address {
+10.1.1.1
+10.2.2.1
+10.3.3.1
+192.168.1.5
+192.168.1.6
+172.24.1.17
+172.24.1.18
+} {ping $address}
+
+
+
+
+
+
+
+
+Practical 4
+
+Aim: Configuring IBGP and EBGP Sessions, Local Preference, and MED.
+Topology:
+
+Code and Output:
+Step-1) Suggested starting configurations:Apply the following configuration to each router along with the appropriate hostname. The exec-timeout 0 0 command should only be used in a lab environment.
+
+Router R1:
+config t
+hostname ISP
+no ip domain-lookup
+line con 0
+logging synchronous
+exec-timeout 0 0
+exit
+
+Router R2:
+en
+config t
+hostname ANDHERI
+no ip domain-lookup
+line con 0
+logging synchronous
+exec-timeout 0 0
+exit
+
+Router R3:
+en
+config t
+hostname BORIVALI
+no ip domain-lookup
+line con 0
+logging synchronous
+exec-timeout 0 0
+exit
+
+Step-2) Configure Interface Addresses: Assign IP addresses to loopback and serial interfaces on routers.
+
+Router R1(config):
+interface Loopback0
+description Suyog Shah Sathaye College 04
+ip add 192.168.100.1 255.255.255.0
+exit
+int se1/0
+ip address 192.168.1.5 255.255.255.252
+clock rate 128000
+no shutdown
+exit
+int se1/1
+ip address 192.168.1.1 255.255.255.252
+clock rate 128000
+no shutdown
+end
+
+Router R2(config):
+interface Loopback0
+description Suyog Shah Sathaye College 04
+ip address 172.16.64.1 255.255.255.0
+exit
+int se1/0
+ip address 192.168.1.6 255.255.255.252
+clock rate 128000
+no shutdown
+exit
+int se1/1
+ip address 172.16.1.1 255.255.255.0
+clock rate 128000
+no shutdown
+end
+
+Router R3(config):
+interface Loopback0
+description Suyog Shah Sathaye College 04
+ip address 172.16.32.1 255.255.255.0
+exit
+int se1/0
+no ip add
+ip address 192.168.1.2 255.255.255.252
+clock rate 128000
+no shutdown
+exit
+int se1/1
+ip address 172.16.1.2 255.255.255.0
+clock rate 128000
+no shutdown
+end
+
+Router R1:
+ping 172.16.1.1
+
+Router R2:
+ping 172.16.1.2
+ping 192.168.1.1
+
+Step-3) Configure EIGRP: Set up EIGRP for routing between routers.
+
+config t
+router eigrp 1
+network 172.16.0.0
+
+Router R3:
+config t
+router eigrp 1
+network 172.16.0.0
+
+Step-4) Configure IBGP and Verify BGP Neighbors: Establish IBGP sessions between routers and verify neighbor relationships.
+
+Router R2(config-router):
+exit
+router bgp 64512
+neighbor 172.16.32.1 remote-as 64512
+neighbor 172.16.32.1 update-source lo0
+
+Router R3(config-router):
+exit
+router bgp 64512
+neighbor 172.16.64.1 remote-as 64512
+neighbor 172.16.64.1 update-source lo0
+end
+show ip bgp neighbors
+
+Step-5) Configure EBGP and Verify BGP Neighbors: Set up EBGP sessions with the ISP router and verify neighbor relationships.
+
+Router R1:
+config t
+router bgp 200
+neighbor 192.168.1.6 remote-as 64512
+neighbor 192.168.1.2 remote-as 64512
+network 192.168.100.0
+
+Router R2(config-router):
+exit
+ip route 172.16.0.0 255.255.0.0 null0
+router bgp 64512
+neighbor 192.168.1.5 remote-as 200
+network 172.16.0.0
+end
+show ip bgp neighbors
+
+Router R3:
+config t
+ip route 172.16.0.0 255.255.0.0 null0
+router bgp 64512
+neighbor 192.168.1.1 remote-as 200
+network 172.16.0.0
+end
+
+Step-6)View BGP summary output:The show ip bgp neighbors command was used to verify that SanJose1 and ISP had reached the established state. A useful alternative command is show ip bgp summary. The output should be similar to the following. 
+
+Router R3:
+show ip bgp neighbors
+
+Step-7) Verify which path the traffic takes:Clear the IP BGP conversation with the clear ip bgp * command on ISP. Wait for the conversations to reestablish with both Andheri and Borivali router.
+
+Router R1(config-router):
+end
+clear ip bgp *
+ping 172.16.64.1
+
+ping 172.16.1.1
+ping 172.16.32.1
+ping 172.16.1.2
+show ip bgp
+
+ping 172.16.1.1 source 192.168.100.1
+ping 172.16.32.1 source 192.168.100.1
+ping 172.16.1.2 source 192.168.100.1
+ping 172.16.64.1 source 192.168.100.1
+
+ping
+Target IP address: 172.16.64.1
+Extended commands[n]: y
+Source address or interface: 192.168.100.1
+
+
+Step-8) Configure the BGP next-hop-self feature:Andheri and Borivali are unaware of each other's link to the ISP. To allow successful pings to the ISP, the serial links should be advertised via BGP on the ISP router or EIGRP can be used on both Andheri and Borivali routers.
+
+Router R1:
+config t
+router bgp 200
+network 192.168.1.0 mask 255.255.255.252
+network 192.168.1.4 mask 255.255.255.252
+end
+show ipbgp
+
+Router R3:
+show ip route
+
+Router R1:
+config t
+router bgp 200
+no network 192.168.1.0 mask 255.255.255.252
+no network 192.168.1.4 mask 255.255.255.252
+exit
+interface serial 1/1
+shutdown
+
+Router R3:
+show ipbgp
+show ip route
+
+Router R2:
+config t
+router bgp 64512
+neighbor 172.16.32.1 next-hop-self
+
+Router R3:
+conf t
+router bgp 64512
+neighbor 172.16.64.1 next-hop-self
+
+Router R2(config-router):
+end
+clear ipbgp *
+
+Router R3(config-router):
+end
+clear ipbgp *
+
+Router R2:
+show ipbgp
+
+Router R3:
+show ipbgp
+
+Router R1(config-if):
+end
+config t
+interface Serial1/1
+no shutdown
+
+Router R3:
+show ip route
+
+Step-9) Set BGP Local Preference: Configure route maps to set local preference values and influence outbound traffic paths.
+Router R2:
+config t
+route-map PRIMARY_T1_IN permit 10
+set local-preference 150
+exit
+router bgp 64512
+neighbor 192.168.1.5 route-map PRIMARY_T1_IN in
+
+Router R3:
+config t
+route-map SECONDARY_T1_IN permit 10
+set local-preference 125
+exit
+router bgp 64512
+neighbor 192.168.1.1 route-map SECONDARY_T1_IN in
+
+Router R2(config-router):
+end
+clear ipbgp * soft
+
+Router R3(config-router):
+end
+clear ipbgp * soft
+
+Router R2:
+show ipbgp
+
+Router R3:
+show ipbgp
+
+Step-10) Set BGP MED: Configure route maps to set MED values and influence inbound traffic paths.
+
+Router R1(config-if):
+end
+show ipbgp
+
+Router R3:
+ping
+Target IP address: 192.168.100.1
+Extended commands[n]: y
+Source address or interface: 172.16.32.1
+
+Router R2:
+config t
+route-map PRIMARY_T1_MED_OUT permit 10
+set Metric 50
+exit
+router bgp 64512
+neighbor 192.168.1.5 route-map PRIMARY_T1_MED_OUT out
+
+Router R3:
+config t
+route-map SECONDARY_T1_MED_OUT permit 10
+set Metric 75
+exit
+router bgp 64512
+neighbor 192.168.1.1 route-map SECONDARY_T1_MED_OUT out
+
+Router R2(config-router):
+end
+clear ipbgp * soft
+show ipbgp
+
+Router R3(config-router):
+end
+clear ipbgp * soft
+show ipbgp
+
+ping
+Target IP address: 192.168.100.1
+Extended commands[n]: y
+Source address or interface: 172.16.32.1
+
+Router R1:
+show ipbgp
+
+Step-11) Establish Default Route: Configure a default route using BGP and verify its operation.
+
+config t
+router bgp 200
+neighbor 192.168.1.6 default-originate
+neighbor 192.168.1.2 default-originate
+exit
+interface loopback 10
+ip address 10.0.0.1 255.255.255.0
+
+Router R2:
+show ip route
+
+Router R3:
+show ip route
+show ipbgp
+
+traceroute 10.0.0.1
+
+Router R1(config-if):
+exit
+interface Serial1/0
+shutdown
+
+Router R2:
+show ip route
+
+Router R3:
+show ip route
+
+
+Router R2:
+trace 10.0.0.1
+
+
+
+
+Practical 5
+
+Aim: Secure the Management Plane. 
+Topology:
+
+Code and Output:
+Step-1) Configure Loopbacks and Assign Addresses: Assign IP addresses to loopback and serial interfaces on routers.
+
+Router R1:
+config t 
+hostname R1  
+interface Loopback 0  
+description Suyog Shah Sathaye College 04 
+description R1 LAN  
+ip address 192.168.1.1 255.255.255.0  
+no shut 
+exit  
+interface se1/0  
+description R1 --> R2  
+ip address 10.1.1.1 255.255.255.252  
+clock rate 128000  
+no shut  
+end 
+
+Router R2: 
+config t 
+hostname R2 
+interface se1/0 
+description Suyog Shah Sathaye College 04 
+description R2-->R1 
+ip add 10.1.1.2 255.255.255.252 
+no shut 
+exit 
+interface se1/1 
+description R2-->R3 
+ip add 10.2.2.1 255.255.255.252 
+clock rate 128000 
+no shut 
+end 
+
+Router R3: 
+config t 
+hostname R3 
+interface loopback0
+description Suyog Shah Sathaye College 04  
+description R3 LAN 
+ip add 192.168.3.1 255.255.255.0 
+no shut 
+exit 
+interface se1/1 
+description R3-->R2 
+ip add 10.2.2.2 255.255.255.252 
+clock rate 128000 
+no shut 
+end 
+
+Step-2)Configure Static Routes: Set up static routes on routers to ensure connectivity.
+
+Router R1:
+conf t
+ip route 0.0.0.0 0.0.0.0 10.1.1.2 
+
+Router R3:
+conf t
+ip route 0.0.0.0 0.0.0.0 10.2.2.1
+
+Router R2:
+conf t
+ip route 192.168.1.0 255.255.255.0 10.1.1.1 
+ip route 192.168.3.0 255.255.255.0 10.2.2.2 
+
+Router R1:
+end
+tclsh
+foreach address {  
+192.168.1.1  
+10.1.1.1  
+10.1.1.2  
+10.2.2.1  
+10.2.2.2  
+192.168.3.1  
+} { ping $address }
+
+
+Step-3)Secure Management Access: Configure passwords, enable login, and set exec-timeout for console and VTY lines.
+
+Router R1(tcl):
+exit
+conf t
+security passwords min-length 10 
+
+enable secret class12345
+
+line console 0
+password ciscoconpass
+exec-timeout 5 0  
+login  
+logging synchronous  
+exit
+
+line vty 0 4  
+password ciscovtypass
+exec-timeout 5 0  
+login  
+exit
+
+line aux 0  
+no exec  
+end
+
+show run 
+
+
+conf t
+service password-encryption 
+end
+
+show run 
+
+
+conf t
+banner motd $Unauthorized access strictly prohibited!$
+exit
+show run 
+
+exit
+
+Use ciscoconpass as password
+
+Router R3:
+security passwords min-length 10  
+enable secret class12345  
+line console 0  
+password ciscoconpass
+exec-timeout 5 0  
+login  
+logging synchronous  
+exit  
+line vty 0 4  
+password ciscovtypass
+exec-timeout 5 0  
+login  
+exit  
+line aux 0  
+no exec  
+end
+
+conf t
+service password-encryption
+banner motd $Unauthorized access strictly prohibited!$
+exit  
+show run
+
+exit
+
+Use ciscoconpass as password
+
+Step-4) Configure Enhanced Username Password Security: Create local database entries for usernames and passwords, and configure console and VTY lines to use local authentication.
+Router R1:
+conf  t
+username JR-ADMIN secret class12345
+username ADMIN secret class54321
+
+line console 0  
+login local  
+exit
+
+line vty 0 4 
+login local 
+end
+
+Router R3:
+conf t
+username JR-ADMIN secret class12345
+username ADMIN secret class54321
+line console 0  
+login local  
+exit  
+line vty 0 4  
+login local  
+end 
+
+Router R1:
+telnet 10.2.2.2
+Username: ADMIN
+Password: class54321
+
+R3>en
+Use class12345  (there is a space after class12345) as password
+
+Step-5) Enable Secure Remote Management Using SSH: Configure SSH on routers, generate RSA keys, and enable SSH on VTY lines.
+
+Router R1(config):
+ip domain-name ccnasecurity.com 
+crypto key zeroize rsa
+crypto key generate rsa general-keys modulus 1024
+ip ssh version 2  
+line vty 0 4  
+transport input ssh 
+end
+
+show ip ssh
+
+Router R3:
+Username: ADMIN
+Password: class54321
+R3>en
+Password: class12345  (there is a space after class12345)
+
+conf t
+ip domain-name ccnasecurity.com  
+crypto key zeroize rsa
+crypto key generate rsa general-keys modulus 1024  
+ip ssh version 2  
+line vty 0 4  
+transport input ssh  
+end  
+
+show ip ssh 
+
+Router R1:
+ssh -l ADMIN 10.2.2.2  
+Password: class54321
+R3>en
+Password: class12345  (there is a space after class12345)
+exit
+
+
+
+
+
+
+
+
+Practical 6
+
+Aim: Configure and Verify Path Control Using PBR.   
+Topology:
+
+
+
+Code and Output:
+Step-1) Configure Loopbacks and Assign Addresses: Assign IP addresses to loopback and serial interfaces on routers.
+
+Router R1:
+config t
+hostname R1
+interface Lo1
+description Suyog Shah Sathaye College 04
+description R1 LAN
+ip address 192.168.1.1 255.255.255.0
+exit
+int se1/0
+description R1-->R2
+ip address 172.16.12.1 255.255.255.248
+clock rate 128000
+bandwidth 128
+no shutdown
+exit
+int se1/1
+description R1-->R3
+ip add 172.16.13.1 255.255.255.248
+bandwidth 64
+no shutdown
+end
+
+
+Router R2:
+config t
+hostname R2
+interface Lo2
+description Suyog Shah Sathaye College 04
+description R2 LAN
+ip address 192.168.2.1 255.255.255.0
+exit
+int se1/0
+description R2-->R1
+ip address 172.16.12.2 255.255.255.248
+bandwidth 128
+no shutdown
+exit
+int se1/1
+description R2-->R3
+ip add 172.16.23.2 255.255.255.248
+bandwidth 64
+no shutdown
+end
+
+Router R3:
+config t
+hostname R3
+interface Lo3
+description Suyog Shah Sathaye College 04
+description R3 LAN
+ip address 192.168.3.1 255.255.255.0
+exit
+int se1/1
+description R3-->R1
+ip address 172.16.13.3 255.255.255.248
+clock rate 64000
+bandwidth 128
+no shutdown
+exit
+int se1/0
+description R3-->R2
+ip add 172.16.23.3 255.255.255.248
+bandwidth 64
+no shutdown
+exit
+int se1/2
+description R3-->R4
+ip add 172.16.34.3 255.255.255.248
+clock rate 64000
+bandwidth 64
+no shutdown
+end
+
+Router R4:
+config t
+hostname R4
+interface Lo4
+description Suyog Shah Sathaye College 04
+description R4 LAN A
+ip address 192.168.4.1 255.255.255.128
+exit
+int Lo5
+description R4 LAN B
+ip address 192.168.4.129 255.255.255.128
+no shutdown
+exit
+int se1/0
+description R4-->R3
+ip add 172.16.34.4 255.255.255.248
+bandwidth 64
+no shutdown
+end
+
+Router R3:
+show ip interface brief | include up
+show ip protocols
+show interfaces description | include up
+
+Step-2) Configure Basic EIGRP: Set up EIGRP for routing between routers.
+
+Router R1:
+config t
+router eigrp 1 
+network 192.168.1.0 
+network 172.16.12.0 0.0.0.7 
+network 172.16.13.0 0.0.0.7 
+no auto-summary
+
+Router R2:
+config t
+router eigrp 1 
+network 192.168.2.0 
+network 172.16.12.0 0.0.0.7 
+network 172.16.23.0 0.0.0.7 
+no auto-summary
+
+Router R3:
+config t
+router eigrp 1 
+network 192.168.3.0 
+network 172.16.13.0 0.0.0.7
+network 172.16.23.0 0.0.0.7
+network 172.16.34.0 0.0.0.7
+no auto-summary
+
+Router R4:
+config t
+router eigrp 1
+network 192.168.4.0
+network 172.16.34.0 0.0.0.7
+no auto-summary
+
+Step-3) Verify EIGRP Connectivity:Use show commands to verify EIGRP adjacencies and connectivity.
+
+Router R1(config-router):
+end
+show ip eigrp neighbors
+
+Router R2(config-router):
+end
+show ip eigrp neighbors
+
+Router R3(router-config):
+end
+show ip eigrp neighbors
+
+Router R4(router-config):
+end
+show ip eigrp neighbors
+
+Router R1:
+tclsh
+foreach address { 
+172.16.12.1 
+172.16.12.2 
+172.16.13.1 
+172.16.13.3 
+172.16.23.2 
+172.16.23.3 
+172.16.34.3 
+172.16.34.4 
+192.168.1.1 
+192.168.2.1 
+192.168.3.1 
+192.168.4.1 
+192.168.4.129 
+} { ping $address }
+
+
+Step-4) Verify Current Path:Use traceroute and show commands to verify the current routing path.
+
+Router R1(tcl):
+exit
+show ip route | begin Gateway
+
+Router R4:
+traceroute 192.168.1.1 source 192.168.4.1
+
+traceroute 192.168.1.1 source 192.168.4.129
+
+Router R3:
+show ip route | begin Gateway
+show interfaces serial1/2 
+show interfaces serial1/1 | include BW 
+show interfaces serial1/0 | include BW
+show ip eigrp topology 192.168.1.0
+
+Step-5) Configure PBR to Provide Path Control: Create access lists and route maps to implement policy-based routing.
+
+Router R3:
+config t
+ip access-list standard PBR-ACL
+remark ACL matches R4 LAN B traffic
+permit 192.168.4.128 0.0.0.127
+exit
+
+route-map R3-to-R1 permit
+description RM to forward LAN B traffic to R1
+match ip address PBR-ACL
+set ip next-hop 172.16.13.1 
+exit
+
+interface s1/1
+ip policy route-map R3-to-R1
+end
+show route-map 
+
+Test the Policy: Use traceroute and debug commands to verify the policy-based routing configuration.
+
+Router R3:
+conf t
+access-list 1 permit 192.168.4.0 0.0.0.255
+exit 
+
+debug ip policy ?
+debug ip policy 1
+
+Router R4:
+traceroute 192.168.1.1 source 192.168.4.1
+traceroute 192.168.1.1 source 192.168.4.129
+
+Router R3:
+show route-map
+
+
+
+
+
+
+
+
+
+Practical 7
+
+Aim: Inter VLAN.
+Topology:
+
+Code and Output:
+Step-1) Configure IP Addresses on PCs: Assign IP addresses to PCs and set default gateways.
+
+
+Step-2) Configure VLANs on the Switch: Create VLANs and assign switch ports to VLANs.
+
+Switch:
+en
+config t
+vlan 10
+name ShubhamGhosalkar
+exit
+vlan 20
+name Cisco
+exit
+int fa0/1
+switchport mode access
+switchport access vlan 10
+exit
+int fa0/2
+switchport mode access
+switchport access vlan 20
+exit
+
+Step-3) Configure IP Addresses on VLAN Interfaces: Assign IP addresses to VLAN interfaces on the switch.
+
+Switch:
+int vlan10
+ip add 192.168.1.1 255.255.255.0
+no shutdown
+exit
+int vlan20
+ip add 192.168.2.1 255.255.255.0
+no shut
+end
+
+
+
+show ip interface brief
+
+ping 192.168.1.2
+ping 192.168.2.2
+
+Step-4) Verify Connectivity:Use ping commands to verify connectivity between PCs in different VLANs.
+
+PC0:
+ping 192.168.1.2
+
+PC1:
+ping 192.168.2.2
+
+
+
+Practical 8
+
+Aim: Simulating MPLS Environment. 
+Topology:
+
+Code and Output:
+Step-1) IP Addressing of MPLS Core and OSPF: Assign IP addresses to router interfaces and configure OSPF for routing.
+
+Router R1:
+config t 
+hostname R1 
+int lo0 
+description Suyog Shah Sathaye College 04
+ip add 1.1.1.1 255.255.255.255 
+ip ospf 1 area 0 
+int f0/0 
+ip add 10.0.0.1 255.255.255.0 
+no shut 
+ip ospf 1 area 0 
+
+Router R2:
+config t 
+hostname R2 
+int lo0 
+description Suyog Shah Sathaye College 04
+ip add 2.2.2.2 255.255.255.255 
+ip ospf 1 area 0 
+interface FastEthernet0/0 
+ip add 10.0.0.2 255.255.255.0 
+no shut 
+ip ospf 1 area 0 
+interface FastEthernet0/1
+ip add 10.0.1.2 255.255.255.0 
+no shut 
+ip ospf 1 area 0
+
+Router R3:
+config t 
+hostname R3 
+int lo0 
+description Suyog Shah Sathaye College 04
+ip add 3.3.3.3 255.255.255.255 
+ip ospf 1 area 0 
+int f0/0 
+ip add 10.0.1.3 255.255.255.0 
+no shut 
+ip ospf 1 area 0
+
+Router R1:
+ping 3.3.3.3 source lo0
+
+Step-2) Configure LDP on Interfaces: Enable MPLS Label Distribution Protocol (LDP) on interfaces.
+
+Router R1:
+config t 
+router ospf 1 
+mpls ldp autoconfig
+
+Router R2:
+exit 
+router ospf 1 
+mpls ldp autoconfig
+
+Router R3:
+exit 
+router ospf 1 
+mpls ldp autoconfig
+
+Router R2:
+end 
+sh mpls interface 
+sh mpls ldp neigh 
+
+Router R1:
+end 
+trace 3.3.3.3 
+
+Step-3) Configure MPLS BGP: Set up MultiProtocol BGP (MP-BGP) between routers.
+
+Router R1:
+config t 
+router bgp 1 
+neighbor 3.3.3.3 remote-as 1 
+neighbor 3.3.3.3 update-source Loopback0 
+no auto-summary  
+address-family vpnv4 
+neighbor 3.3.3.3 activate 
+
+Router R3:
+end 
+config t 
+router bgp 1 
+neighbor 1.1.1.1 remote-as 1 
+neighbor 1.1.1.1 update-source Loopback0 
+no auto-summary 
+address-family vpnv4 
+neighbor 1.1.1.1 activate
+
+Router R1:
+end 
+sh bgp vpnv4 unicast all summary
+
+Step-4) Verify MPLS Operation:Use show commands to verify MPLS interfaces, LDP neighbors, and BGP sessions.
+
+Router R4:
+config t 
+int lo0 
+description Suyog Shah Sathaye College 04
+ip add 4.4.4.4 255.255.255.255 
+ip ospf 2 area 2 
+int f0/0 
+ip add 192.168.1.4 255.255.255.0 
+ip ospf 2 area 2
+no shut
+
+Router R1:
+config t 
+int f0/1
+ip add 192.168.1.1 255.255.255.0 
+no shut 
+exit 
+
+Step-5) Configure VRFs and OSPF: Create VRFs, assign interfaces to VRFs, and configure OSPF within VRFs.
+
+Router R1(config):
+ip vrf RED 
+rd 4:4 
+route-target both 4:4
+
+exit
+int f0/1
+ip vrf forwarding RED
+
+int f0/1
+ip address 192.168.1.1 255.255.255.0
+
+end 
+sh run int f0/1
+
+sh ip route
+
+Step-6) Verify VRF Operation:Use show commands to verify VRF routing tables and connectivity between customer sites.
+
+Router R1:
+sh ip route vrf RED
+
+config t 
+int f0/1
+ip ospf 2 area 2
+
+end
+sh ip route vrf RED
+
+Router R5:
+config t 
+hostname R5 
+int lo0
+description Suyog Shah Sathaye College 04 
+ip add 6.6.6.6 255.255.255.255 
+ip ospf 2 area 2 
+int f0/0 
+ip add 192.168.2.6 255.255.255.0 
+ip ospf 2 area 2 
+no shut 
+
+Router R3:
+config t 
+int f0/1
+ip add 192.168.2.3 255.255.255.0 
+no shut
+
+exit 
+ip vrf RED 
+rd 4:4 
+route-target both 4:4 
+
+exit 
+int f0/1
+ip vrf forwarding RED
+
+exit 
+int f0/1
+ip address 192.168.2.1 255.255.255.0
+
+end 
+sh run int f0/1
+
+config t 
+int f0/1
+ip ospf 2 area 2
+
+end 
+sh ip route vrf RED
+
+Router R4:
+end 
+sh ip route 
+
+Router R1:
+sh ip route
+sh ip route vrf RED
+
+config t 
+router bgp 1 
+address-family ipv4 vrf RED 
+redistribute ospf 2 
+
+Router R3:
+config t 
+router bgp 1 
+address-family ipv4 vrf RED 
+redistribute ospf 2
+
+Router R1:
+end 
+sh ip bgp vpnv4 vrf RED
+
+Router R3:
+end 
+sh ip bgp vpnv4 vrf RED
+
+Router R1:
+config t 
+router ospf 2 
+redistribute bgp 1 subnets
+
+Router R3:
+config t 
+router ospf 2 
+redistribute bgp 1 subnets
+
+Router R4:
+sh ip route
+
+Router R5:
+end
+sh ip route
+
+Router R4:
+ping 6.6.6.6
+
+trace 6.6.6.6
+
+
+Practical 9
+
+Aim: Simulating MPLS Environment. 
+Topology:
+
+Code and Output:
+Step-1) Configure IP Addresses on Routers and PCs:Assign IP addresses to router interfaces and PCs.
+PC1:
+ip 172.20.1.100 255.255.255.0 gateway 172.20.1.1 
+
+PC2:
+ip 172.20.2.100 255.255.255.0 gateway 172.20.2.1 
+
+PC3:
+ip 172.20.1.200 255.255.255.0 gateway 172.20.1.1
+
+PC4:
+ip 172.20.4.100 255.255.255.0 gateway 172.20.4.1
+
+PC5:
+ip 172.20.5.100 255.255.255.0 gateway 172.20.5.1
+
+PC6:
+ip 172.20.4.200 255.255.255.0 gateway 172.20.4.1
+
+Router R1:
+config t 
+int fa0/0  
+description Suyog Shah Sathaye College 04 
+ip address 172.20.1.1 255.255.255.0  
+no shutdown  
+exit 
+int S1/0 
+ip address 10.10.10.2 255.255.255.252  
+no shutdown
+
+Router R2:
+config t 
+int fa0/0  
+description Suyog Shah Sathaye College 04 
+ip address 172.20.2.1 255.255.255.0 
+no shutdown 
+exit  
+int S1/0 
+ip address 10.10.20.2 255.255.255.252 
+no shutdown
+
+Router R3:
+config t 
+int fa0/0  
+description Suyog Shah Sathaye College 04 
+ip address 172.20.1.1 255.255.255.0 
+no shutdown 
+exit  
+int S1/0 
+ip address 10.10.30.2 255.255.255.252 
+no shutdown
+
+Router R4:
+config t 
+int fa0/0  
+description Suyog Shah Sathaye College 04 
+ip address 172.20.4.1 255.255.255.0 
+no shutdown 
+exit  
+int S1/0 
+ip address 10.10.40.2 255.255.255.252 
+no shutdown 
+
+Router R5:
+config t 
+int fa0/0  
+description Suyog Shah Sathaye College 04 
+ip address 172.20.5.1 255.255.255.0  
+no shutdown 
+exit  
+int S1/0 
+ip address 10.10.50.2 255.255.255.252 
+no shutdown 
+
+Router R6:
+config t 
+int fa0/0 
+description Suyog Shah Sathaye College 04 
+ip address 172.20.4.1 255.255.255.0 
+no shutdown 
+exit  
+int S1/0 
+ip address 10.10.60.2 255.255.255.252 
+no shutdown 
+
+Router R7:
+config t 
+int S1/0 
+description Suyog Shah Sathaye College 04 
+ip address 10.10.10.1 255.255.255.252 
+exit 
+int S1/1 
+ip address 10.10.20.1 255.255.255.252  
+exit 
+int S1/2 
+ip address 10.10.30.1 255.255.255.252  
+exit 
+int S2/0 
+ip address 10.10.40.1 255.255.255.252  
+exit 
+int S2/1 
+ip address 10.10.50.1 255.255.255.252  
+exit 
+int S2/2 
+ip address 10.10.60.1 255.255.255.252  
+exit 
+
+Step-2) Create VRFs: Define VRFs for each customer and assign interfaces to VRFs.
+
+Router R7(config):
+ip vrf CUSTOMER-1  
+rd 100:1 
+exit 
+ip vrf CUSTOMER-2 
+rd 100:2 
+exit 
+ip vrf CUSTOMER-3 
+rd 100:3 
+exit
+
+int s1/0 
+ip vrf forwarding CUSTOMER-1 
+int s1/1 
+ip vrf forwarding CUSTOMER-2 
+int s1/2 
+ip vrf forwarding CUSTOMER-3 
+int s2/0 
+ip vrf forwarding CUSTOMER-1 
+int s2/1 
+ip vrf forwarding CUSTOMER-2 
+int s2/2 
+ip vrf forwarding CUSTOMER-3 
+end 
+
+show ip vrf
+
+Step-3) Configure OSPF Routing: Set up OSPF within each VRF to enable routing between customer sites.
+
+Router R1:
+exit 
+router ospf 1 
+network 0.0.0.0 255.255.255.255 area 0
+
+Router R2:
+exit 
+router ospf 1 
+network 0.0.0.0 255.255.255.255 area 0
+
+Router R3:
+exit 
+router ospf 1 
+network 0.0.0.0 255.255.255.255 area 0
+
+Router R4:
+exit 
+router ospf 1 
+network 0.0.0.0 255.255.255.255 area 0
+
+Router R5:
+exit 
+router ospf 1 
+network 0.0.0.0 255.255.255.255 area 0
+
+Router R6:
+exit 
+router ospf 1 
+network 0.0.0.0 255.255.255.255 area 0
+
+Router R7:
+config t 
+router ospf 1 vrf CUSTOMER-1 
+network 0.0.0.0 255.255.255.255 area 0 
+router ospf 2 vrf CUSTOMER-2  
+network 0.0.0.0 255.255.255.255 area 0 
+router ospf 3 vrf CUSTOMER-3 
+network 0.0.0.0 255.255.255.255 area 0  
+end
+
+show ip ospf neighbor 
+
+show ip route 
+
+Step-4) Verify VRF-lite Operation:Use show commands to verify VRF routing tables and connectivity between customer sites.
+
+Router R7:
+show ip route vrf CUSTOMER-1
+
+PC1:
+ping 172.20.4.100
+
+trace 172.20.4.100 
+
+ping 2 172.20.5.100
+
+PC3:
+trace 172.20.4.200
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Practical 10
+
+Aim: Simulating Static Routing. 
+Topology:
+
+Code and Output:
+Step-1) Configure Interface and Assign IP Addresses: Assign IP addresses to router interfaces.
+
+Router R1:
+config t 
+interface serial1/0 
+description Suyog Shah Sathaye College 04 
+ip add 20.0.0.1 255.0.0.0 
+no shut 
+exit 
+interface serial1/1 
+ip add 10.0.0.2 255.0.0.0 
+no shut 
+exit 
+int f0/0 
+ip add 60.0.0.1 255.0.0.0 
+no shut 
+end 
+
+show ip interface brief | ex un
+
+Router R2:
+config t 
+interface serial1/0
+description Suyog Shah Sathaye College 04 
+ip add 20.0.0.2 255.0.0.0 
+no shut 
+exit 
+interface serial1/2 
+ip add 30.0.0.1 255.0.0.0 
+no shut 
+exit 
+int f0/0 
+ip add 70.0.0.1 255.0.0.0 
+no shut 
+end 
+
+show ip interface brief | ex un 
+
+Router R3:
+config t 
+interface serial1/1
+description Suyog Shah Sathaye College 04 
+ip add 10.0.0.1 255.0.0.0 
+no shut 
+exit 
+interface serial1/0
+ip add 50.0.0.2 255.0.0.0 
+no shut 
+exit 
+int f0/0 
+ip add 80.0.0.1 255.0.0.0 
+no shut 
+end 
+
+show ip interface brief | ex un
+
+Router R4:
+config t 
+interface serial1/1 
+description Suyog Shah Sathaye College 04 
+ip add 40.0.0.2 255.0.0.0 
+no shut 
+exit 
+interface serial1/0
+ip add 50.0.0.1 255.0.0.0 
+no shut 
+exit  
+int f0/0 
+ip add 90.0.0.1 255.0.0.0 
+no shut 
+end 
+
+show ip interface brief | ex un
+
+Router R5:
+config t 
+interface serial1/2
+description Suyog Shah Sathaye College 04 
+ip add 30.0.0.2 255.0.0.0 
+no shut 
+exit 
+interface serial1/1
+ip add 40.0.0.1 255.0.0.0 
+no shut 
+exit 
+int f0/0 
+ip add 100.0.0.1 255.0.0.0 
+no shut 
+end 
+
+show ip interface brief | ex un 
+
+Step-2) Configure Gateways for PCs: Set default gateways on PCs.
+PC1:
+ip 80.0.0.2 255.0.0.0 gateway 80.0.0.1 
+
+PC2:
+ip 90.0.0.2 255.0.0.0 gateway 90.0.0.1 
+
+PC3:
+ip 100.0.0.2 255.0.0.0 gateway 100.0.0.1
+
+PC4:
+ip 60.0.0.2 255.0.0.0 gateway 60.0.0.1
+
+PC5:
+ip 70.0.0.2 255.0.0.0 gateway 70.0.0.1 
+
+Step-3) Configure Static Routing: Add static routes to routers to ensure connectivity between networks.
+
+Router R1:
+config t 
+ip forward-protocol nd
+ip route 30.0.0.0 255.0.0.0 20.0.0.2 
+ip route 50.0.0.0 255.0.0.0 10.0.0.1 
+ip route 80.0.0.0 255.0.0.0 10.0.0.1 
+ip route 90.0.0.0 255.0.0.0 50.0.0.1 
+ip route 100.0.0.0 255.0.0.0 30.0.0.2 
+
+do show ip route 
+
+Router R2:
+config t 
+ip forward-protocol nd
+ip route 10.0.0.0 255.0.0.0 20.0.0.1 
+ip route 80.0.0.0 255.0.0.0 10.0.0.1 
+ip route 50.0.0.0 255.0.0.0 10.0.0.1 
+ip route 90.0.0.0 255.0.0.0 50.0.0.1 
+ip route 100.0.0.0 255.0.0.0 30.0.0.2 
+ip route 40.0.0.0 255.0.0.0 30.0.0.2 
+
+do show ip route 
+
+Router R3:
+config t 
+ip forward-protocol nd
+ip route 60.0.0.0 255.0.0.0 10.0.0.2 
+ip route 20.0.0.0 255.0.0.0 10.0.0.2 
+ip route 70.0.0.0 255.0.0.0 20.0.0.2 
+ip route 30.0.0.0 255.0.0.0 20.0.0.2 
+ip route 90.0.0.0 255.0.0.0 50.0.0.1 
+ip route 40.0.0.0 255.0.0.0 50.0.0.1 
+ip route 100.0.0.0 255.0.0.0 40.0.0.1 
+
+do show ip route 
+
+Router R4:
+config t 
+ip forward-protocol nd
+ip route 80.0.0.0 255.0.0.0 50.0.0.2 
+ip route 10.0.0.0 255.0.0.0 50.0.0.2 
+ip route 60.0.0.0 255.0.0.0 10.0.0.2 
+ip route 20.0.0.0 255.0.0.0 10.0.0.2 
+ip route 100.0.0.0 255.0.0.0 40.0.0.1 
+ip route 30.0.0.0 255.0.0.0 40.0.0.1 
+ip route 70.0.0.0 255.0.0.0 30.0.0.1
+
+do show ip route 
+
+Router R5:
+config t 
+ip forward-protocol nd
+ip route 90.0.0.0 255.0.0.0 40.0.0.2 
+ip route 50.0.0.0 255.0.0.0 40.0.0.2 
+ip route 80.0.0.0 255.0.0.0 50.0.0.2 
+ip route 10.0.0.0 255.0.0.0 50.0.0.2 
+ip route 70.0.0.0 255.0.0.0 30.0.0.1 
+ip route 20.0.0.0 255.0.0.0 30.0.0.1 
+ip route 60.0.0.0 255.0.0.0 20.0.0.1 
+
+do show ip route
+
+Step-4) Verify Connectivity:Use ping and traceroute commands to verify connectivity between PCs in different networks.
+
+PC5:
+ping 70.0.0.2 
+
+
+PC1:
+ping 100.0.0.2
+
+
+
