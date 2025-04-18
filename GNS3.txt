@@ -1,23 +1,15 @@
-INDEX
-1- Configure IP SLA Feature.
-2- Configure IP SLA Tracking as Path Control Topology.
-3- Configure using as the AS_PATH Attribute. 
-4-Configuring IBGP as EBGP Sessions, Local Preference, as MED.
-5-Secure the Management Plane.
-6-Configure and Verify Path Control Using PBR.
-7-Inter VLAN Routing.
-8-Simulating MPLS Environment.
-9-Configure VRF-lite on routers.
-10-Simulating Static Routing.
+1 Configure IP SLA Feature.
+2 Configure IP SLA Tracking as Path Control Topology.
+3 Configure using as the AS_PATH Attribute. 
+4 Configuring IBGP as EBGP Sessions, Local Preference, as MED.
+5 Secure the Management Plane.
+6 Configure and Verify Path Control Using PBR.
+7 Inter VLAN Routing.
+8 Simulating MPLS Environment.
+9 Configure VRF-lite on routers.
+10 Simulating Static Routing.
 
------------- Practical 1 -----------------------
-
-Aim: Configure IP SLA Feature.
-Topology:
-
-Code and Output:
-Step-1) Prepare Routers: Configure router hostnames and interface addresses.
-
+--------------------------------------------- Practical 1 ----------------------------------------------
 Router R1:
 en
 conf t
@@ -84,6 +76,7 @@ ip add 209.165.200.226 255.255.255.252
 bandwidth 128
 no shut
 
+
 Router R1(config-if):
 end
 show interfaces description | include up
@@ -122,7 +115,6 @@ exit
 ip route 192.168.1.0 255.255.255.0 209.165.202.130
 
 Step-2) Verify Server Reachability: Use ping and trace commands to verify connectivity to servers.
-
 Router R1(config):
 end
 tclsh
@@ -133,25 +125,16 @@ foreach address {
 } {
 ping $address source 192.168.1.1
 }
-
-
 foreach address {
 209.165.200.254
 209.165.201.30
 209.165.202.158
 } {
-trace $address source 192.168.1.1
-}
+trace $address source 192.168.1.1}
 
+------------------------------------------------ Practical 2 ----------------------------------------------------------------------------
 
----------------------- Practical 2--------------
-
-Aim: Configure IP SLA Tracking and Path Control Topology. 
-Topology:
-
-Code and Output:
 Step-3) Configure IP SLA Probes: Create ICMP echo probes to monitor connectivity to DNS servers.
-
 Router R1:
 en
 config t
@@ -159,10 +142,11 @@ ip sla 11
 icmp-echo 209.165.201.30
 frequency 10
 exit
-ip sla schedule 11 life forever start-time now
+ip sla schedule 11 life forever start-time now 
 exit
 
 show ip sla configuration 11
+
 
 show ip sla statistics 11
 
@@ -175,6 +159,7 @@ ip sla schedule 22 life forever start-time now
 end
 
 show ip sla configuration 22
+
 
 show ip sla statistics 22
 
@@ -212,7 +197,6 @@ end
 show ip route | begin Gateway
 
 Step-5) Verify IP SLA Operation: Disable and re-enable interfaces in Router R2 to observe IP SLA tracking and verify routing table and IP SLA statistics.
-
 Router R2:
 config t
 interface loopback 1
@@ -235,16 +219,10 @@ show ip route | begin Gateway
 
 
 
+--------------------------------------------- Practical 3 -------------------------------------------------------------
 
----------------- Practical 3-------------
-
-Aim: Configure using the AS_PATH Attribute. 
-Topology:
-
-Code and Output:
 Step-1) Prepare Routers: Erase startup configurations and reload routers to clear previous configurations.
 Step-2) Configure Hostnames and Interface Addresses: Assign IP addresses to router interfaces and loopback interfaces.
-
 Router R1:
 en
 config t
@@ -253,7 +231,7 @@ interface Loopback0
 description Suyog Shah Sathaye College 04
 ip address 10.1.1.1 255.255.255.0
 exit
-interface Serial1/0
+interface Serial2/0
 ip address 192.168.1.5 255.255.255.252
 no shut
 end
@@ -266,10 +244,10 @@ interface Loopback0
 description Suyog Shah Sathaye College 04
 ip address 10.2.2.1 255.255.255.0
 exit
-interface Serial1/0
+interface Serial2/0
 ip address 192.168.1.6 255.255.255.252
 no shut
-interface Serial1/1
+interface Serial2/1
 ip address 172.24.1.17 255.255.255.252
 no shut
 end
@@ -282,7 +260,7 @@ interface Loopback0
 description Suyog Shah Sathaye College 04
 ip address 10.3.3.1 255.255.255.0
 exit
-interface Serial1/1
+interface Serial2/1
 ip address 172.24.1.18 255.255.255.252
 no shut
 end
@@ -302,7 +280,6 @@ ping 192.168.1.5
 ping 172.24.1.18
 
 Step-3) Configure BGP: Set up BGP on routers, establish neighbor relationships, and advertise loopback networks.
-
 Router R1:
 config t
 router bgp 100
@@ -338,7 +315,6 @@ ping 10.3.3.1 source Lo0
 show ip bgp
 
 Step-5) Use AS_PATH Attribute to Filter Routes: Configure access lists and apply them to filter BGP routes based on AS_PATH.
-
 Router R2:
 config t
 ip as-path access-list 1 deny ^100$
@@ -367,19 +343,10 @@ foreach address {
 } {ping $address}
 
 
+----------------------------------------------------- Practical 4 --------------------------------------------------------------------
 
-
-
-
-
-
-================ Practical 4 ------------------
-
-Aim: Configuring IBGP and EBGP Sessions, Local Preference, and MED.
-Topology:
-
-Code and Output:
-Step-1) Suggested starting configurations:Apply the following configuration to each router along with the appropriate hostname. The exec-timeout 0 0 command should only be used in a lab environment.
+Step-1) Suggested starting configurations:Apply the following configuration to each router along with the appropriate hostname.
+The exec-timeout 0 0 command should only be used in a lab environment.
 
 Router R1:
 config t
@@ -411,18 +378,17 @@ exec-timeout 0 0
 exit
 
 Step-2) Configure Interface Addresses: Assign IP addresses to loopback and serial interfaces on routers.
-
 Router R1(config):
 interface Loopback0
 description Suyog Shah Sathaye College 04
 ip add 192.168.100.1 255.255.255.0
 exit
-int se1/0
+int se2/0
 ip address 192.168.1.5 255.255.255.252
 clock rate 128000
 no shutdown
 exit
-int se1/1
+int se2/2
 ip address 192.168.1.1 255.255.255.252
 clock rate 128000
 no shutdown
@@ -433,12 +399,12 @@ interface Loopback0
 description Suyog Shah Sathaye College 04
 ip address 172.16.64.1 255.255.255.0
 exit
-int se1/0
+int se2/0
 ip address 192.168.1.6 255.255.255.252
 clock rate 128000
 no shutdown
 exit
-int se1/1
+int se2/1
 ip address 172.16.1.1 255.255.255.0
 clock rate 128000
 no shutdown
@@ -449,13 +415,13 @@ interface Loopback0
 description Suyog Shah Sathaye College 04
 ip address 172.16.32.1 255.255.255.0
 exit
-int se1/0
+int se2/1
 no ip add
 ip address 192.168.1.2 255.255.255.252
 clock rate 128000
 no shutdown
 exit
-int se1/1
+int se2/2
 ip address 172.16.1.2 255.255.255.0
 clock rate 128000
 no shutdown
@@ -494,9 +460,7 @@ neighbor 172.16.64.1 remote-as 64512
 neighbor 172.16.64.1 update-source lo0
 end
 show ip bgp neighbors
-
 Step-5) Configure EBGP and Verify BGP Neighbors: Set up EBGP sessions with the ISP router and verify neighbor relationships.
-
 Router R1:
 config t
 router bgp 200
@@ -522,12 +486,10 @@ network 172.16.0.0
 end
 
 Step-6)View BGP summary output:The show ip bgp neighbors command was used to verify that SanJose1 and ISP had reached the established state. A useful alternative command is show ip bgp summary. The output should be similar to the following. 
-
 Router R3:
 show ip bgp neighbors
 
 Step-7) Verify which path the traffic takes:Clear the IP BGP conversation with the clear ip bgp * command on ISP. Wait for the conversations to reestablish with both Andheri and Borivali router.
-
 Router R1(config-router):
 end
 clear ip bgp *
@@ -550,14 +512,13 @@ Source address or interface: 192.168.100.1
 
 
 Step-8) Configure the BGP next-hop-self feature:Andheri and Borivali are unaware of each other's link to the ISP. To allow successful pings to the ISP, the serial links should be advertised via BGP on the ISP router or EIGRP can be used on both Andheri and Borivali routers.
-
 Router R1:
 config t
 router bgp 200
 network 192.168.1.0 mask 255.255.255.252
 network 192.168.1.4 mask 255.255.255.252
 end
-show ipbgp
+show ip bgp
 
 Router R3:
 show ip route
@@ -568,7 +529,7 @@ router bgp 200
 no network 192.168.1.0 mask 255.255.255.252
 no network 192.168.1.4 mask 255.255.255.252
 exit
-interface serial 1/1
+interface serial 2/2
 shutdown
 
 Router R3:
@@ -602,7 +563,7 @@ show ipbgp
 Router R1(config-if):
 end
 config t
-interface Serial1/1
+interface Serial2/2
 no shutdown
 
 Router R3:
@@ -722,12 +683,7 @@ trace 10.0.0.1
 
 
 
--------------------- Practical 5 -----------------
-
-Aim: Secure the Management Plane. 
-Topology:
-
-Code and Output:
+---------------------------------------------- Practical 5 -----------------------------------------------------------------------------------
 Step-1) Configure Loopbacks and Assign Addresses: Assign IP addresses to loopback and serial interfaces on routers.
 
 Router R1:
@@ -739,7 +695,7 @@ description R1 LAN
 ip address 192.168.1.1 255.255.255.0  
 no shut 
 exit  
-interface se1/0  
+interface se2/0  
 description R1 --> R2  
 ip address 10.1.1.1 255.255.255.252  
 clock rate 128000  
@@ -749,13 +705,13 @@ end
 Router R2: 
 config t 
 hostname R2 
-interface se1/0 
+interface se2/0 
 description Suyog Shah Sathaye College 04 
 description R2-->R1 
 ip add 10.1.1.2 255.255.255.252 
 no shut 
 exit 
-interface se1/1 
+interface se2/1 
 description R2-->R3 
 ip add 10.2.2.1 255.255.255.252 
 clock rate 128000 
@@ -771,7 +727,7 @@ description R3 LAN
 ip add 192.168.3.1 255.255.255.0 
 no shut 
 exit 
-interface se1/1 
+interface se2/1 
 description R3-->R2 
 ip add 10.2.2.2 255.255.255.252 
 clock rate 128000 
@@ -779,7 +735,6 @@ no shut
 end 
 
 Step-2)Configure Static Routes: Set up static routes on routers to ensure connectivity.
-
 Router R1:
 conf t
 ip route 0.0.0.0 0.0.0.0 10.1.1.2 
@@ -804,7 +759,6 @@ foreach address {
 10.2.2.2  
 192.168.3.1  
 } { ping $address }
-
 
 Step-3)Secure Management Access: Configure passwords, enable login, and set exec-timeout for console and VTY lines.
 
@@ -875,8 +829,7 @@ banner motd $Unauthorized access strictly prohibited!$
 exit  
 show run
 
-exit
-
+R3#exit
 Use ciscoconpass as password
 
 Step-4) Configure Enhanced Username Password Security: Create local database entries for usernames and passwords, and configure console and VTY lines to use local authentication.
@@ -950,17 +903,8 @@ Password: class12345  (there is a space after class12345)
 exit
 
 
-
- ------------------------ Practical 6 ---------------------
-
-Aim: Configure and Verify Path Control Using PBR.   
-Topology:
-
-
-
-Code and Output:
+--------------------------------------------- cal 6 ---------------------------------------------------------------
 Step-1) Configure Loopbacks and Assign Addresses: Assign IP addresses to loopback and serial interfaces on routers.
-
 Router R1:
 config t
 hostname R1
@@ -969,20 +913,19 @@ description Suyog Shah Sathaye College 04
 description R1 LAN
 ip address 192.168.1.1 255.255.255.0
 exit
-int se1/0
+int se2/0
 description R1-->R2
 ip address 172.16.12.1 255.255.255.248
 clock rate 128000
 bandwidth 128
 no shutdown
 exit
-int se1/1
+int se2/1
 description R1-->R3
 ip add 172.16.13.1 255.255.255.248
 bandwidth 64
 no shutdown
 end
-
 
 Router R2:
 config t
@@ -992,13 +935,13 @@ description Suyog Shah Sathaye College 04
 description R2 LAN
 ip address 192.168.2.1 255.255.255.0
 exit
-int se1/0
+int se2/0
 description R2-->R1
 ip address 172.16.12.2 255.255.255.248
 bandwidth 128
 no shutdown
 exit
-int se1/1
+int se2/2
 description R2-->R3
 ip add 172.16.23.2 255.255.255.248
 bandwidth 64
@@ -1013,20 +956,20 @@ description Suyog Shah Sathaye College 04
 description R3 LAN
 ip address 192.168.3.1 255.255.255.0
 exit
-int se1/1
+int se2/1
 description R3-->R1
 ip address 172.16.13.3 255.255.255.248
 clock rate 64000
 bandwidth 128
 no shutdown
 exit
-int se1/0
+int se2/2
 description R3-->R2
 ip add 172.16.23.3 255.255.255.248
 bandwidth 64
 no shutdown
 exit
-int se1/2
+int se2/3
 description R3-->R4
 ip add 172.16.34.3 255.255.255.248
 clock rate 64000
@@ -1047,7 +990,7 @@ description R4 LAN B
 ip address 192.168.4.129 255.255.255.128
 no shutdown
 exit
-int se1/0
+int se2/3
 description R4-->R3
 ip add 172.16.34.4 255.255.255.248
 bandwidth 64
@@ -1060,7 +1003,6 @@ show ip protocols
 show interfaces description | include up
 
 Step-2) Configure Basic EIGRP: Set up EIGRP for routing between routers.
-
 Router R1:
 config t
 router eigrp 1 
@@ -1129,7 +1071,6 @@ foreach address {
 192.168.4.129 
 } { ping $address }
 
-
 Step-4) Verify Current Path:Use traceroute and show commands to verify the current routing path.
 
 Router R1(tcl):
@@ -1138,14 +1079,13 @@ show ip route | begin Gateway
 
 Router R4:
 traceroute 192.168.1.1 source 192.168.4.1
-
 traceroute 192.168.1.1 source 192.168.4.129
 
 Router R3:
 show ip route | begin Gateway
-show interfaces serial1/2 
-show interfaces serial1/1 | include BW 
-show interfaces serial1/0 | include BW
+show interfaces serial2/3
+show interfaces serial2/2 | include BW 
+show interfaces serial2/1 | include BW
 show ip eigrp topology 192.168.1.0
 
 Step-5) Configure PBR to Provide Path Control: Create access lists and route maps to implement policy-based routing.
@@ -1163,7 +1103,7 @@ match ip address PBR-ACL
 set ip next-hop 172.16.13.1 
 exit
 
-interface s1/1
+interface s2/1
 ip policy route-map R3-to-R1
 end
 show route-map 
@@ -1180,28 +1120,15 @@ debug ip policy 1
 
 Router R4:
 traceroute 192.168.1.1 source 192.168.4.1
+
 traceroute 192.168.1.1 source 192.168.4.129
 
 Router R3:
 show route-map
 
 
-
-
-
-
-
-
-
--------------------- Practical 7  ---------------------
-
-Aim: Inter VLAN.
-Topology:
-
-Code and Output:
+-------------------------------------------- Practical 7   -------------------------------------------------------------------------
 Step-1) Configure IP Addresses on PCs: Assign IP addresses to PCs and set default gateways.
-
-
 Step-2) Configure VLANs on the Switch: Create VLANs and assign switch ports to VLANs.
 
 Switch:
@@ -1250,12 +1177,10 @@ PC1:
 ping 192.168.2.2
 
 
-
--------------- Practical 8 -------------------------
+-------------------------------------------- Practical 8 -------------------------------------------------------------------------
 
 Aim: Simulating MPLS Environment. 
 Topology:
-
 Code and Output:
 Step-1) IP Addressing of MPLS Core and OSPF: Assign IP addresses to router interfaces and configure OSPF for routing.
 
@@ -1444,7 +1369,6 @@ ip ospf 2 area 2
 
 end 
 sh ip route vrf RED
-
 Router R4:
 end 
 sh ip route 
@@ -1495,12 +1419,7 @@ ping 6.6.6.6
 trace 6.6.6.6
 
 
------------------------- Practical 9 ----------------------------
-
-Aim: Simulating MPLS Environment. 
-Topology:
-
-Code and Output:
+-------------------------------------------  Practical 9  -------------------------------------------------------------------
 Step-1) Configure IP Addresses on Routers and PCs:Assign IP addresses to router interfaces and PCs.
 PC1:
 ip 172.20.1.100 255.255.255.0 gateway 172.20.1.1 
@@ -1699,14 +1618,9 @@ PC3:
 trace 172.20.4.200
 
 
---------------------------------- Practical 10 ------------------------
 
-Aim: Simulating Static Routing. 
-Topology:
-
-Code and Output:
+---------------------------- Practical 10 -----------------------------
 Step-1) Configure Interface and Assign IP Addresses: Assign IP addresses to router interfaces.
-
 Router R1:
 config t 
 interface serial1/0 
@@ -1882,9 +1796,6 @@ Step-4) Verify Connectivity:Use ping and traceroute commands to verify connectiv
 PC5:
 ping 70.0.0.2 
 
-
 PC1:
 ping 100.0.0.2
-
-
 
