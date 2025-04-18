@@ -1,39 +1,16 @@
 INDEX
-
 1- Configure IP SLA Feature.
-
-
 2- Configure IP SLA Tracking as Path Control Topology.
-
-
 3- Configure using as the AS_PATH Attribute. 
-
-
 4-Configuring IBGP as EBGP Sessions, Local Preference, as MED.
-
-
 5-Secure the Management Plane.
-
-
 6-Configure and Verify Path Control Using PBR.
-
-
-
 7-Inter VLAN Routing.
-
-
-
 8-Simulating MPLS Environment.
-
-
-
 9-Configure VRF-lite on routers.
-
-
 10-Simulating Static Routing.
 
-
-Practical 1
+------------ Practical 1 -----------------------
 
 Aim: Configure IP SLA Feature.
 Topology:
@@ -167,7 +144,7 @@ trace $address source 192.168.1.1
 }
 
 
-Practical 2
+---------------------- Practical 2--------------
 
 Aim: Configure IP SLA Tracking and Path Control Topology. 
 Topology:
@@ -259,7 +236,7 @@ show ip route | begin Gateway
 
 
 
-Practical 3
+---------------- Practical 3-------------
 
 Aim: Configure using the AS_PATH Attribute. 
 Topology:
@@ -396,7 +373,7 @@ foreach address {
 
 
 
-Practical 4
+================ Practical 4 ------------------
 
 Aim: Configuring IBGP and EBGP Sessions, Local Preference, and MED.
 Topology:
@@ -745,7 +722,7 @@ trace 10.0.0.1
 
 
 
-Practical 5
+-------------------- Practical 5 -----------------
 
 Aim: Secure the Management Plane. 
 Topology:
@@ -974,12 +951,7 @@ exit
 
 
 
-
-
-
-
-
-Practical 6
+ ------------------------ Practical 6 ---------------------
 
 Aim: Configure and Verify Path Control Using PBR.   
 Topology:
@@ -1221,7 +1193,7 @@ show route-map
 
 
 
-Practical 7
+-------------------- Practical 7  ---------------------
 
 Aim: Inter VLAN.
 Topology:
@@ -1279,7 +1251,7 @@ ping 192.168.2.2
 
 
 
-Practical 8
+-------------- Practical 8 -------------------------
 
 Aim: Simulating MPLS Environment. 
 Topology:
@@ -1523,7 +1495,7 @@ ping 6.6.6.6
 trace 6.6.6.6
 
 
-Practical 9
+------------------------ Practical 9 ----------------------------
 
 Aim: Simulating MPLS Environment. 
 Topology:
@@ -1727,23 +1699,7 @@ PC3:
 trace 172.20.4.200
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Practical 10
+--------------------------------- Practical 10 ------------------------
 
 Aim: Simulating Static Routing. 
 Topology:
