@@ -1,0 +1,400 @@
+---------------------------- Prac 1 ---------------------------------------------
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+print("Practical Performed By Shubham Ghosalkar")
+data pd.read_csv ("C:/Users/shubham ghosalkar/Downloads/Wholesale customersdata.csv")
+categorical_features = ['Channel', 'Region']
+continuous_features= ['Fresh', 'Milk', 'Grocery', 'Frozen', 'Detergents_Paper', 'Delicassen']
+data = pd.get_dummies(data, columns=categorical_features)
+mms=MinMaxScaler()
+data_scaled=mms.fit_transform(data)
+sum_of_squared_distances = []
+K=range(1, 15)
+for k in K:
+  km KMeans(n_clusters=k)
+  km.fit(data_scaled)
+  sum_of_squared_distances.append(km.inertia_)
+plt.plot (K, sum_of_squared_distances, color='red', marker='*', linestyle=':') 
+plt.xlabel('k')
+plt.ylabel('Sum of Squared Distances')
+plt.title('Elbow Method for Optimal k')
+plt.show()
+
+---------------------------- Prac 2 ----------------------------------------------
+use Suyog
+db.wordcount.insertOne({name:'Suyog Shah'})  
+db.wordcount.insertOne({name:'Lionel Messi'})  
+db.wordcount.insertOne({name:'Cristiano Ronaldo '})  
+db.wordcount.insertOne({name:'Erling Haaland'})  
+db.wordcount.insertOne({name:'Kylian Mbappé'})  
+db.wordcount.insertOne({name:'David Beckham'})  
+db.wordcount.insertOne({name:'Shubham Ghosalkar'})  
+db.wordcount.insertOne({name:'David Silva'})  
+db.wordcount.find()
+var mapFunction=function(){  
+var words=this.name.split(" ");  
+for(var i=0;i<words.length;i++){  
+
+emit(words[i],1);}}; 
+var reduceFunction=function(key,values){  
+var count=0  
+for(var i=0;i<values.length;i++){  
+count+=values[i];  
+}  
+return count;  
+};
+db.wordcount.mapReduce(mapFunction,reduceFunction,{out:"word"});  
+db.word.find()
+
+---------------------------- prac 3a-1 --------------------------------------------------------------
+import pandas as pd
+import numpy as np
+from sklearn import linear_model
+import matplotlib.pyplot as plt
+print ("Practical Performed By Shubham Ghosalkar")
+df = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/homeprices.csv") 
+print(df)
+plt.scatter(df['area'], df['price'], color='red', marker='.', label='Actual Data') 
+plt.xlabel('Area (sq ft)')
+plt.ylabel('Price')
+X=df[['area']]
+y=df['price']
+model=linear_model.Linear Regression()
+model.fit(x, y)
+y_pred=model.predict(X)
+plt.plot(df ['area'], y_pred, color-'blue', label='Best Fit Line')
+plt.legend()
+plt.show()
+predicted_price=model.predict([[1500]])
+print("Predicted price for 1500 sq ft:', predicted_price[0])
+print('Model Coefficient:', model.coef_[0])
+print('Model Intercept:', model.intercept_)
+
+--------------------------------------- prac 3a-2 --------------------------------------------------------------
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+import numpy as np
+print("Practical Performed By Shubham Ghosalkar")
+data=pd.read_csv("C:/Users/shubham ghosalkar/Downloads/weightwaist.csv - Sheet1.csv")
+print(data)
+print(data.shape)
+data.plot(kind='scatter', x='waist_cm', y='weight_kg')
+plt.show()
+print(data.corr())
+waist=pd.DataFrame(data['waist_cm'])
+weight=pd.DataFrame(data['weight_kg'])
+print(waist)
+print(weight)
+1m=linear_model.Linear Regression() 
+model=lm.fit (waist, weight)
+print(model.coef_)
+print(model.intercept_)
+print(model.score(waist, weight))
+Waist_new=np.array([97])
+#print("97", Waist_new)
+Waist_new=Waist_new.reshape(-1,1)
+Weight_predict=model.predict (Waist_new)
+print(Weight_predict)
+x=([67,78,94])
+x=pd.DataFrame(x)
+y=model.predict(x)
+y=pd.DataFrame(y)
+df=pd.concat([x, y), axis=1, keys=['Waist_new', 'Weight_predicted']) 
+print(df)
+data.plot(kind='scatter', x='waist_cm', y='weight_kg')
+plt.plot (waist, model.predict (waist), color='Red', linewidth=2) 
+plt.scatter (Waist_new, Weight_predict, color='black')
+plt.show()
+
+
+---------------------- prac 3a-3 -----------------------------------------
+
+import pandas as pd
+import numpy as np
+from sklearn import linear_model
+import matplotlib.pyplot as plt
+print("Practical Performed By Shubham Ghosalkar")
+df = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/canada_per_capita_income.csv")
+print (df)
+plt.scatter(df['year'], df ['per capita income (US$)'], color='red', marker='.', label='Actual Data')
+plt.xlabel('Year')
+plt.ylabel('Per Capita Income (US$)')
+X=df[['year']]
+y=df['per capita income (US$)']
+model = linear_model.LinearRegression()
+model.fit(x, y)
+y_pred=model.predict (X)
+plt.plot(df['year'], y_pred, color='blue', label='Best Fit Line')
+plt.legend()
+plt.show()
+predicted_income=model.predict([[2029]])
+print('Predicted per capita income for 2029:', predicted_income [0])
+print('Model Coefficient:', model.coef_[0])
+print('Model Intercept:', model.intercept_)
+
+
+----------------------prac 3b ------------------------------
+
+import numpy as np
+from matplotlib import pyplot as plt
+from sklearn.linear_model import LogisticRegression 
+from sklearn.model_selection import train_test_split 
+from sklearn.metrics import confusion_matrix
+from sklearn.datasets import make_classification
+print("Practical Performed By Shubham Ghosalkar ")
+x,y = make classification(
+  n_samples=100,
+  n_features=1,
+  n_classes=2,
+  n_clusters_per_class=1,
+  n_informative=1,
+  n_redundant=0,
+  n_repeated=0,
+  random_state=s,
+)
+x_train, x_test, y_train, y_test = train_test_split (x, y, random_state=1)
+log_reg = LogisticRegression()
+log_reg.fit(x_train, y_train)
+print("Coefficient (slope):", log_reg.coef_) 
+print("Intercept (bias):", log_reg.intercept_)
+y_pred= log_reg.predict(x_test)
+print("\nConfusion Matrix:\n", confusion_matrix (y_test, y_pred))
+x_values = np.linspace (x.min(), x.max(), 500).reshape(-1, 1)
+y_prob = log_reg.predict_proba(x_values) [:, 1]
+plt.scatter (x, y, c=y, cmap='plasma', label='Data points') # 'viridis', 'plasma', or 'coolwarm'. 
+plt.plot (x_values, y_prob, color='black', label='Decision Boundary(Sigmoid Curve)')
+plt.axhline(0.5, color='gray', linestyle='dotted', label= 'Threshold = 0.5')
+plt.title("Logistic Regression Decision Boundary")
+plt.xlabel('Feature')
+plt.ylabel('Probability')
+plt.legend() 
+plt.show()
+
+
+----------------------- prac 4a ---------------------------
+momgo :---
+db.Prac4A.insertOne({Name:'ShubhamGhosalkar',Class:'MScIT',Roll_N0
+ 1})  
+db.Prac4A.insertOne({Name:'Shubham Gite',Class:'MScIT',Roll_No:2}) 
+db.Prac4A.insertOne({Name:'Tejas Pednekar',Class:'MScIT',Roll_No:3})  
+db.Prac4A.insertOne({Name:'Suyog Shah',Class:'MScIT',Roll_No:4})
+db.Prac4A.insertOne({Name:'Yash Yadav',Class:'MScIT',Roll_No:5})  
+db.Prac4A.find() 
+db.Prac4A.find() 
+
+py :--
+from pymongo import MongoClient 
+client=MongoClient('localhost:27017')
+db=client.Suyog
+collection=db.Prac4A
+print("Whole Record: ")
+for x in collection.find({},{"_id": 0, "Name": 1, "Class":1,"Roll_No":1}):
+    print(x)
+record={"Name": "ABC XYZ", "Class":"MSCIT", "Roll_No":"6"}
+result=collection.insert_one(record)
+print("inserted record id: ", result. inserted_id)
+print("Updated Record: ")
+for x in collection.find({},{"_id": 0, "Name": 1, "Class":1,"Roll_No":1}): 
+    print(x)
+filter={"Name":"ABC XYZ"}
+update_record=("$set":{"Class":"BSCIT"}}
+result=collection.update_one(filter, update_record)
+print("Records Matched: ", result.matched_count)
+print("Records Modified: ", result.modified_count) 
+print("Updated Record: ")
+
+for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
+    print (x)
+filter={"Name":"ABC XYZ"}
+result=collection.delete_one(filter)
+print("Deleted record count: ", result.deleted_count)
+print("Updated Record: ")
+for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1})|:
+    print (x)
+
+
+--------------------- prac 4b ------------------------
+mongo:- 
+db.Prac4B.insertOne({Name:'ShubhamGhosalkar',Class:'MScIT',Roll_No:
+ 1})  
+db.Prac4B.insertOne({Name:'Shubham Gite',Class:'MScIT',Roll_No:2}) 
+db.Prac4B.insertOne({Name:'Tejas Pednekar',Class:'MScIT',Roll_No:3})  
+db.Prac4B.insertOne({Name:'Suyog Shah',Class:'MScIT',Roll_No:4})  
+db.Prac4B.insertOne({Name:'Yash Yadav',Class:'MScIT',Roll_No:5}) 
+db.Prac4B.find()
+
+py code :-
+from pymongo import MongoClient
+client=MongoClient ('localhost:27017')
+db=client.Suyog
+collection=db.Prac4B
+print("Whole Record: ")
+for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}): 
+    print (x)
+result=collection.insert_many([{"Name":"ABC XYZ", "Class": "MSCIT", "Roll_No":"6"},{"Name": "IJK LMN", "Class":"MSCIT", "Roll_No":"7"}]) 
+print("inserted record id: ", result.inserted_ids)
+print("Updated Record: ")
+for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
+    print (x)
+filter={"Name":"MSCIT"}
+update_record=("$set":{"Qualification":"Graduated"}}
+result=collection.update_many(filter, update_record) 
+print("Records Matched: ", result.matched_count) 
+print("Records Modified: ", result.modified_count) 
+print("Updated Record: ")
+for x in collection.find({}, {"_id":0,"Name": 1, "Class": 1, "Roll_No":1}): 
+    print (x)
+filter=({"Sor": [{"Roll_No":"6"},{"Roll_No": "7"}]}) 
+result=collection.delete_many(filter)
+print("Deleted record count: ", result.deleted_count) 
+print("Updated Record: ")
+for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
+    print (x)
+
+
+
+------------------------- prac 5 --------------------------------
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.model_selection import train_test_split 
+from sklearn.preprocessing import StandardScaler 
+from sklearn.svm import SVC
+from sklearn import metrics
+print ("Practical Performed By Shubham Ghosalkar")
+InputFile="C:/Users/shubham ghosalkar/Downloads/social.csv"
+df pd.read_csv(InputFile)
+print(df)
+x=df.iloc[:, [2,3]]
+y=df.iloc[:,4]
+print ("x:\n",x)
+print ("y:\n",y)
+x_train, x_test, y_train, y_test=train_test_split(x, y, test_size=0.25, random_state=0) 
+print("Training Data: \n",x_train)
+print ("Testing Data: \n",x_test)
+sc_x=StandardScaler ()
+x_train=sc_x.fit_transform(x_train)
+k_test=sc_x.fit_transform(x_test)
+classifier=SVC(kernel='linear', random_state=0)
+classifier.fit(x_train, y_train)
+y_pred=classifier.predict(x_test)
+print("y_pred: \n",y_pred)
+print("Accuracy Score with Linear Kernel: ") 
+print(metrics.accuracy_score(y_test, y_pred)) 
+
+
+------------------------- prac 6 --------------------------------
+
+import pandas as pd.
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+print("Practical Performed By Shubham Ghosalkar ")
+df pd.read_csv("C:/Users/shubham ghosalkar/Downloads/Social Network_Ads.csv") print (df)
+X=df[["Age", "EstimatedSalary"]]
+Y=df["Purchased"]
+X_train, X_test, Y_train, Y_test train_test_split(X, Y, test_size=0.25, random_state=42)
+print(X_train. shape, Y_train.shape, X_test.shape, Y_test.shape)
+scaler=MinMaxScaler()
+X_train_scaled=scaler.fit_transform(X_train)
+X_test_scaled=scaler.transform(X_test)
+X_test_scaled _df = pd.DataFrame(X_test_scaled, columns=["Age", "EstimatedSalary"], index=X_test.index)
+model_DT=DecisionTreeClassifier()
+model_DT.fit (X_train_scaled, Y_train)
+Y_predict=model_DT.predict(X_test_scaled)
+plt.scatter (X_test_scaled_df [Y_test == 0]['Age'], X_test_scaled_df[Y_test ==0]['EstimatedSalary'], c='yellow', alpha=0.7, label="Not Purchased")
+plt.scatter (X_test_scaled_df [Y_test == 1]['Age'], X_test_scaled_df [Y_test ==1]['EstimatedSalary'], c='green', alpha=0.7, label="Purchased")
+plt.xlabel("Age (Scaled)")
+plt.ylabel("Estimated Salary (Scaled)")
+plt.legend()
+plt.show()
+print("Model Accuracy:", model_DT.score (X_test_scaled, Y_test))
+
+------------------------- prac 7 --------------------------------
+
+from sklearn.feature_extraction.text import TfidfVectorizer 
+import pandas as pd
+print("Practical Performed By Shubham Ghosalkar")
+documents=[
+    "The car is fast",
+    "The bike is slow",
+    "The car is fast, bike is slow"]
+vectorizer=TfidfVectorizer ()
+tfid_matrix=vectorizer.fit_transform(documents)
+feature_names=vectorizer.get_feature_names_out()
+tfid_array=tfid_matrix.toarray()
+df=pd.DataFrame(tfid_array, columns=feature_names)
+print(df)
+
+------------------------- prac 8 --------------------------------
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import nitk
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion matrix, ConfusionMatrixDisplay
+nltk.download('punkt')
+print("Practical Performed By Shubham Ghosalkar ")
+Tweets_data = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/Tweets.csv") print ("Reading Data Set \n", Tweets_data.head (2), Tweets_data.shape)
+pie_plot1 = Tweets_data['airline'].value_counts()
+pie_plot1.plot(kind="pie", autopct="%2.1f%%", startangle=90) 
+plt.title('Airline Distribution')
+plt.show()
+print('\n', pie_plotl.head(2))
+pie_plot2= Tweets_data['airline_sentiment').value_counts()
+pie_plot2.plot(kind-"pie", autopot="%2.1f%%", startangle=90)
+plt.title('Sentiment Distribution')
+plt.legend(pie_plot2.index, loc='best')
+plt.show()
+print ("\n", pie_plot2.head(2))
+X Tweets_data['text']
+y= Tweets_data['airline_sentiment']
+X_train, X_test, y_train, y_test=train_test_split(x, y, test_size=0.2, random_state=42) 
+vectorizer = CountVectorizer()
+X_train_vectorized = vectorizer.fit_transform(X_train) 
+X_test_vectorized = vectorizer.transform(X_test)
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train_vectorized, y_train)
+y_pred = model.predict(X_test_vectorized)
+cm = confusion matrix(y_test, y_pred, labels=model.classes_)
+disp = ConfusionMatrixDisplay(confusion matrix=cm, display_labels-model.classes_) 
+disp.plot(cmap=plt.cm.Blues)
+plt.title('Confusion Matrix')
+plt.show()
+accuracy
+np.mean (y_pred == y_test)
+print (f'Accuracy: {accuracy:.2f}')
+
+
+------------------------- prac 9 --------------------------------
+
+
+
+------------------------- prac 10 --------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
