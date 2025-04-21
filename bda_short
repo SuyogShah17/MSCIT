@@ -147,43 +147,33 @@ plt.show()
 
 ----------------------- prac 4a ---------------------------
 momgo :---
-db.Prac4A.insertOne({Name:'ShubhamGhosalkar',Class:'MScIT',Roll_N0
- 1})  
-db.Prac4A.insertOne({Name:'Shubham Gite',Class:'MScIT',Roll_No:2}) 
-db.Prac4A.insertOne({Name:'Tejas Pednekar',Class:'MScIT',Roll_No:3})  
-db.Prac4A.insertOne({Name:'Suyog Shah',Class:'MScIT',Roll_No:4})
-db.Prac4A.insertOne({Name:'Yash Yadav',Class:'MScIT',Roll_No:5})  
-db.Prac4A.find() 
-db.Prac4A.find() 
+mongosh
+use Suyog1
+db.Prac.insertOne({Name:'Suyog',Class:'MScIT',Roll_N0:1})  
+db.Prac.insertOne({Name:'Krishnaa',Class:'MScIT',Roll_No:2})  
+db.Prac.find() 
 
 py :--
-from pymongo import MongoClient 
-client=MongoClient('localhost:27017')
-db=client.Suyog
-collection=db.Prac4A
+from pymongo import MongoClient
+client = MongoClient('localhost:27017')
+db = client.Suyog1
+col = db.Prac
+
 print("Whole Record: ")
-for x in collection.find({},{"_id": 0, "Name": 1, "Class":1,"Roll_No":1}):
-    print(x)
-record={"Name": "ABC XYZ", "Class":"MSCIT", "Roll_No":"6"}
-result=collection.insert_one(record)
-print("inserted record id: ", result. inserted_id)
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+record = {"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 3}
+print("inserted record id:", col.insert_one(record).inserted_id)
 print("Updated Record: ")
-for x in collection.find({},{"_id": 0, "Name": 1, "Class":1,"Roll_No":1}): 
-    print(x)
-filter={"Name":"ABC XYZ"}
-update_record=("$set":{"Class":"BSCIT"}}
-result=collection.update_one(filter, update_record)
-print("Records Matched: ", result.matched_count)
-print("Records Modified: ", result.modified_count) 
-print("Updated Record: ")
-for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
-    print (x)
-filter={"Name":"ABC XYZ"}
-result=collection.delete_one(filter)
-print("Deleted record count: ", result.deleted_count)
-print("Updated Record: ")
-for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1})|:
-    print (x)
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+update = col.update_one({"Name": "ABC XYZ"}, {"$set": {"Class": "BSCIT"}})
+print(f"Records Matched: {update.matched_count}, Records Modified: {update.modified_count}")
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+print("Deleted record count:", col.delete_one({"Name": "ABC XYZ"}).deleted_count)
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
 
 
 --------------------- prac 4b ------------------------
