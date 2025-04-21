@@ -1,4 +1,4 @@
----------------------------- Prac 1 ---------------------------------------------
+----------------- Prac 1 ---------------------------------------------
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
@@ -15,7 +15,7 @@ plt.show()
 
 
 
----------------------------- Prac 2 ----------------------------------------------
+----------------- Prac 2 ----------------------------------------------
 use Suyog
 db.wordcount.insertOne({name:'Suyog Shah'})
 db.wordcount.insertOne({name:'Radhe Krishna'})
@@ -27,7 +27,66 @@ db.wordcount.mapReduce(
 db.word.find()
 
 
----------------------------- prac 3a-1 --------------------------------------------------------------
+------------------- prac 7 --------------------------------
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+docs = ["The car is fast", "The bike is slow", "The car is fast, bike is slow"]
+vec = TfidfVectorizer()
+mat = vec.fit_transform(docs).toarray()
+print(pd.DataFrame(mat, columns=vec.get_feature_names_out()))
+
+
+----------------- prac 4a ---------------------------
+momgo :---
+mongosh
+use Suyog1
+db.Prac.insertOne({Name:'Suyog',Class:'MScIT',Roll_N0:1})  
+db.Prac.insertOne({Name:'Krishnaa',Class:'MScIT',Roll_No:2})  
+db.Prac.find() 
+
+py :--
+from pymongo import MongoClient
+col = MongoClient('localhost:27017').Suyog1.Prac
+print("Whole Record: ")
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+print("Inserted ID:", col.insert_one({"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 3}).inserted_id)
+
+print("Updated Record: ")
+col.update_one({"Name": "ABC XYZ"}, {"$set": {"Class": "BSCIT"}})
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+print("Deleted count:", col.delete_one({"Name": "ABC XYZ"}).deleted_count)
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+
+----------------- prac 4b ------------------------
+mongo:- 
+mongosh
+use Suyog1
+db.Prac.insertMany([
+{Name: 'Suyog Shah', Class: 'MScIT', Roll_No: 1}, 
+{Name: 'RadheKrishna', Class: 'MScIT', Roll_No: 2}])
+db.Prac.find()
+
+py code :-
+from pymongo import MongoClient
+col = MongoClient('localhost:27017').Suyog1.Prac
+print("Whole Record: ")
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+result = col.insert_many([{"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 6}, {"Name": "IJK LMN", "Class": "MSCIT", "Roll_No": 7}])
+print("Inserted IDs: ", result.inserted_ids)
+
+print("Updated Record: ")
+col.update_many({"Class": "MSCIT"}, {"$set": {"Qualification": "Graduated"}})
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+print("Deleted count:", col.delete_many({"Roll_No": {"$in": [6, 7]}}).deleted_count)
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+
+---------------------- prac 3a-1 --------------------------------------------------------------
 import pandas as pd, numpy as np, matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 print("Practical performed by Suyog Shah")
@@ -42,8 +101,7 @@ print('Model Coefficient:', model.coef_[0])
 print('Model Intercept:', model.intercept_)
 
 
-
---------------------------------------- prac 3a-2 --------------------------------------------------------------
+-------------------- prac 3a-2 --------------------------------------------------------------
 import pandas as pd, matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 data = pd.read_csv(r"E:/sem2/practicals/bda/weightwaist.csv - Sheet1.csv")
@@ -63,7 +121,6 @@ plt.scatter(Waist_new, Weight_predict, c='k')
 plt.show()
 
 
-
 ---------------------- prac 3a-3 -----------------------------------------
 import pandas as pd, matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
@@ -79,9 +136,51 @@ print("Model Intercept:", model.intercept_)
 print("Model Score (R^2):", model.score(df[['year']], df['per capita income (US$)']))
 
 
+------------------ prac 5 --------------------------------
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn import metrics
+df = pd.read_csv("E:/sem2/practicals/bda/social.csv")
+x, y = df.iloc[:, [2, 3]], df.iloc[:, 4]
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
+sc_x = StandardScaler()
+x_train, x_test = sc_x.fit_transform(x_train), sc_x.transform(x_test)
+
+y_pred = SVC(kernel='linear', random_state=0).fit(x_train, y_train).predict(x_test)
+print("x:\n", x, "\ny:\n", y, "\nTraining Data: \n", x_train, "\nTesting Data: \n", x_test)
+print("y_pred:\n", y_pred)
+print("Accuracy Score with Linear Kernel: ", metrics.accuracy_score(y_test, y_pred))
+
+
+------------------- prac 6 --------------------------------
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+df = pd.read_csv("E:/sem2/practicals/bda/Social_Network_Ads.csv")
+X, Y = df[["Age", "EstimatedSalary"]], df["Purchased"]
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, random_state=42)
+print(df)
+print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
+
+scaler = MinMaxScaler()
+X_train_s, X_test_s = scaler.fit_transform(X_train), scaler.transform(X_test)
+clf = DecisionTreeClassifier().fit(X_train_s, Y_train)
+Y_pred = clf.predict(X_test_s)
+
+X_test_df = pd.DataFrame(X_test_s, columns=["Age", "EstimatedSalary"], index=X_test.index)
+plt.scatter(X_test_df[Y_test == 0]["Age"], X_test_df[Y_test == 0]["EstimatedSalary"], c='yellow', alpha=0.7, label="Not Purchased")
+plt.scatter(X_test_df[Y_test == 1]["Age"], X_test_df[Y_test == 1]["EstimatedSalary"], c='green', alpha=0.7, label="Purchased")
+plt.xlabel("Age (Scaled)"); plt.ylabel("Estimated Salary (Scaled)")
+plt.legend(); plt.show()
+
+print("Model Accuracy:", clf.score(X_test_s, Y_test))
 
 ----------------------prac 3b ------------------------------
-
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LogisticRegression 
@@ -115,111 +214,6 @@ plt.xlabel('Feature')
 plt.ylabel('Probability')
 plt.legend() 
 plt.show()
-
-
------------------------ prac 4a ---------------------------
-momgo :---
-mongosh
-use Suyog1
-db.Prac.insertOne({Name:'Suyog',Class:'MScIT',Roll_N0:1})  
-db.Prac.insertOne({Name:'Krishnaa',Class:'MScIT',Roll_No:2})  
-db.Prac.find() 
-
-py :--
-from pymongo import MongoClient
-col = MongoClient('localhost:27017').Suyog1.Prac
-print("Whole Record: ")
-for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
-print("Inserted ID:", col.insert_one({"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 3}).inserted_id)
-
-print("Updated Record: ")
-col.update_one({"Name": "ABC XYZ"}, {"$set": {"Class": "BSCIT"}})
-for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
-print("Deleted count:", col.delete_one({"Name": "ABC XYZ"}).deleted_count)
-for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
-
---------------------- prac 4b ------------------------
-mongo:- 
-mongosh
-use Suyog1
-db.Prac.insertMany([
-{Name: 'Suyog Shah', Class: 'MScIT', Roll_No: 1}, 
-{Name: 'RadheKrishna', Class: 'MScIT', Roll_No: 2}])
-db.Prac.find()
-
-
-py code :-
-from pymongo import MongoClient
-col = MongoClient('localhost:27017').Suyog1.Prac
-print("Whole Record: ")
-for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
-result = col.insert_many([{"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 6}, {"Name": "IJK LMN", "Class": "MSCIT", "Roll_No": 7}])
-print("Inserted IDs: ", result.inserted_ids)
-
-print("Updated Record: ")
-col.update_many({"Class": "MSCIT"}, {"$set": {"Qualification": "Graduated"}})
-for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
-print("Deleted count:", col.delete_many({"Roll_No": {"$in": [6, 7]}}).deleted_count)
-for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
-
-------------------------- prac 5 --------------------------------
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn import metrics
-df = pd.read_csv("E:/sem2/practicals/bda/social.csv")
-x, y = df.iloc[:, [2, 3]], df.iloc[:, 4]
-
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
-sc_x = StandardScaler()
-x_train, x_test = sc_x.fit_transform(x_train), sc_x.transform(x_test)
-
-y_pred = SVC(kernel='linear', random_state=0).fit(x_train, y_train).predict(x_test)
-print("x:\n", x, "\ny:\n", y, "\nTraining Data: \n", x_train, "\nTesting Data: \n", x_test)
-print("y_pred:\n", y_pred)
-print("Accuracy Score with Linear Kernel: ", metrics.accuracy_score(y_test, y_pred))
-
-
-------------------------- prac 6 --------------------------------
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import train_test_split
-df = pd.read_csv("E:/sem2/practicals/bda/Social_Network_Ads.csv")
-X, Y = df[["Age", "EstimatedSalary"]], df["Purchased"]
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, random_state=42)
-print(df)
-print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
-
-scaler = MinMaxScaler()
-X_train_s, X_test_s = scaler.fit_transform(X_train), scaler.transform(X_test)
-clf = DecisionTreeClassifier().fit(X_train_s, Y_train)
-Y_pred = clf.predict(X_test_s)
-
-X_test_df = pd.DataFrame(X_test_s, columns=["Age", "EstimatedSalary"], index=X_test.index)
-plt.scatter(X_test_df[Y_test == 0]["Age"], X_test_df[Y_test == 0]["EstimatedSalary"], c='yellow', alpha=0.7, label="Not Purchased")
-plt.scatter(X_test_df[Y_test == 1]["Age"], X_test_df[Y_test == 1]["EstimatedSalary"], c='green', alpha=0.7, label="Purchased")
-plt.xlabel("Age (Scaled)"); plt.ylabel("Estimated Salary (Scaled)")
-plt.legend(); plt.show()
-
-print("Model Accuracy:", clf.score(X_test_s, Y_test))
-
----------------------- prac 7 --------------------------------
-from sklearn.feature_extraction.text import TfidfVectorizer
-import pandas as pd
-docs = ["The car is fast", "The bike is slow", "The car is fast, bike is slow"]
-vec = TfidfVectorizer()
-mat = vec.fit_transform(docs).toarray()
-print(pd.DataFrame(mat, columns=vec.get_feature_names_out()))
-
 
 ------------------------- prac 8 --------------------------------
 import pandas as pd, matplotlib.pyplot as plt, numpy as np, nltk
