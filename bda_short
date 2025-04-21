@@ -17,94 +17,66 @@ plt.show()
 
 ---------------------------- Prac 2 ----------------------------------------------
 use Suyog
-db.wordcount.insertOne({name:'Suyog Shah'})  
-db.wordcount.insertOne({name:'Lionel Messi'})  
-db.wordcount.insertOne({name:'Cristiano Ronaldo '})  
-db.wordcount.insertOne({name:'Erling Haaland'})  
-db.wordcount.insertOne({name:'Kylian Mbappé'})  
-db.wordcount.insertOne({name:'David Beckham'})  
-db.wordcount.insertOne({name:'Shubham Ghosalkar'})  
-db.wordcount.insertOne({name:'David Silva'})  
-db.wordcount.find()
-var mapFunction=function(){  
-var words=this.name.split(" ");  
-for(var i=0;i<words.length;i++){  
-emit(words[i],1);}}; 
-var reduceFunction=function(key,values){  
-var count=0  
-for(var i=0;i<values.length;i++){  
-count+=values[i];  
-}  
-return count;  
-};
-db.wordcount.mapReduce(mapFunction,reduceFunction,{out:"word"});  
+db.wordcount.insertOne({name:'Suyog Shah'})
+db.wordcount.insertOne({name:'Radhe Krishna'})
+db.wordcount.mapReduce(
+  function(){ this.name.split(" ").forEach(w => emit(w, 1)) },
+  function(k, v){ return Array.sum(v) },
+  {out: "word"}
+)
 db.word.find()
 
+
 ---------------------------- prac 3a-1 --------------------------------------------------------------
-import pandas as pd
-import numpy as np
-from sklearn import linear_model
-import matplotlib.pyplot as plt
+import pandas as pd, numpy as np, matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
 print("Practical performed by Suyog Shah")
-df = pd.read_csv(r"E:\sem2\practicals\bda\homeprices.csv")
+df = pd.read_csv("E:/sem2/practicals/bda/homeprices.csv")
 print(df)
-plt.scatter(df['area'], df['price'], color='red', marker='.', label='Actual Data')
-plt.xlabel('Area (sq ft)')
-plt.ylabel('Price')
-X = df[['area']]
-y = df['price']
-model = linear_model.LinearRegression()
-model.fit(X, y)
-y_pred = model.predict(X)
-plt.plot(df['area'], y_pred, color='blue', label='Best Fit Line')
-plt.legend()
-plt.show()
-predicted_price = model.predict(pd.DataFrame({'area': [1500]}))
-print("Predicted price for 1500 sq ft:", predicted_price[0])
+plt.scatter(df.area, df.price, c='r', label='Actual')
+model = LinearRegression().fit(df[['area']], df.price)
+plt.plot(df.area, model.predict(df[['area']]), c='b', label='Fit')
+plt.xlabel('Area'), plt.ylabel('Price'), plt.legend(), plt.show()
+print("Predicted price for 1500 sq ft:", model.predict([[1500]])[0])
 print('Model Coefficient:', model.coef_[0])
 print('Model Intercept:', model.intercept_)
 
 
---------------------------------------- prac 3a-2 --------------------------------------------------------------
 
-import pandas as pd
-import matplotlib.pyplot as plt
+--------------------------------------- prac 3a-2 --------------------------------------------------------------
+import pandas as pd, matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 data = pd.read_csv(r"E:/sem2/practicals/bda/weightwaist.csv - Sheet1.csv")
-data.plot(kind='scatter', x='waist_cm', y='weight_kg')
-plt.show()
+data.plot.scatter(x='waist_cm', y='weight_kg'); plt.show()
 print(data.corr())
-waist, weight = data[['waist_cm']], data[['weight_kg']]
-lm = LinearRegression().fit(waist, weight)
-print(f"Model Coefficient: {lm.coef_}, Intercept: {lm.intercept_}, R^2: {lm.score(waist, weight)}")
+lm = LinearRegression().fit(data[['waist_cm']], data['weight_kg'])
+print(f"Coef: {lm.coef_}, Intercept: {lm.intercept_}, R²: {lm.score(data[['waist_cm']], data['weight_kg'])}")
 Waist_new = pd.DataFrame({'waist_cm': [97]})
 Weight_predict = lm.predict(Waist_new)
-print(f"Predicted weight for waist 97cm: {Weight_predict}")
+print(f"Predicted weight for 97cm waist: {Weight_predict[0]}")
 df = pd.DataFrame({'waist_cm': [67, 78, 94]})
 df['Weight_predicted'] = lm.predict(df)
 print(df)
-data.plot(kind='scatter', x='waist_cm', y='weight_kg')
-plt.plot(waist, lm.predict(waist), color='red', linewidth=2)
-plt.scatter(Waist_new, Weight_predict, color='black')
+data.plot.scatter(x='waist_cm', y='weight_kg')
+plt.plot(data['waist_cm'], lm.predict(data[['waist_cm']]), 'r', linewidth=2)
+plt.scatter(Waist_new, Weight_predict, c='k')
 plt.show()
 
 
+
 ---------------------- prac 3a-3 -----------------------------------------
-
-
 import pandas as pd, matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 df = pd.read_csv("E:/sem2/practicals/bda/canada_per_capita_income.csv")
 print(df)
-plt.scatter(df['year'], df['per capita income (US$)'], color='green', marker='o')
-plt.plot(df['year'], LinearRegression().fit(df[['year']], df['per capita income (US$)']).predict(df[['year']]), color='blue')
+plt.scatter(df['year'], df['per capita income (US$)'], c='g', marker='o')
+plt.plot(df['year'], LinearRegression().fit(df[['year']], df['per capita income (US$)']).predict(df[['year']]), 'b')
 plt.xlabel('Year'); plt.ylabel('Per Capita Income (US$)'); plt.title('Canada Per Capita Income Over Years'); plt.show()
 model = LinearRegression().fit(df[['year']], df['per capita income (US$)'])
 print("Predicted income for 2025:", model.predict([[2025]])[0])
 print("Model Coefficient:", model.coef_[0])
 print("Model Intercept:", model.intercept_)
 print("Model Score (R^2):", model.score(df[['year']], df['per capita income (US$)']))
-
 
 
 
@@ -155,115 +127,64 @@ db.Prac.find()
 
 py :--
 from pymongo import MongoClient
-client = MongoClient('localhost:27017')
-db = client.Suyog1
-col = db.Prac
 
+col = MongoClient('localhost:27017').Suyog1.Prac
 print("Whole Record: ")
 for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
 
-record = {"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 3}
-print("inserted record id:", col.insert_one(record).inserted_id)
+print("Inserted ID:", col.insert_one({"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 3}).inserted_id)
+
 print("Updated Record: ")
+col.update_one({"Name": "ABC XYZ"}, {"$set": {"Class": "BSCIT"}})
 for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
 
-update = col.update_one({"Name": "ABC XYZ"}, {"$set": {"Class": "BSCIT"}})
-print(f"Records Matched: {update.matched_count}, Records Modified: {update.modified_count}")
+print("Deleted count:", col.delete_one({"Name": "ABC XYZ"}).deleted_count)
 for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
-print("Deleted record count:", col.delete_one({"Name": "ABC XYZ"}).deleted_count)
-for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
-
 
 
 --------------------- prac 4b ------------------------
 mongo:- 
-db.Prac4B.insertOne({Name:'ShubhamGhosalkar',Class:'MScIT',Roll_No:
- 1})  
-db.Prac4B.insertOne({Name:'Shubham Gite',Class:'MScIT',Roll_No:2}) 
-db.Prac4B.insertOne({Name:'Tejas Pednekar',Class:'MScIT',Roll_No:3})  
-db.Prac4B.insertOne({Name:'Suyog Shah',Class:'MScIT',Roll_No:4})  
-db.Prac4B.insertOne({Name:'Yash Yadav',Class:'MScIT',Roll_No:5}) 
+db.Prac4B.insertMany([
+{Name: 'Suyog Shah', Class: 'MScIT', Roll_No: 1}, 
+{Name: 'RadheKrishna', Class: 'MScIT', Roll_No: 2}])
 db.Prac4B.find()
+
 
 py code :-
 from pymongo import MongoClient
-client=MongoClient ('localhost:27017')
-db=client.Suyog
-collection=db.Prac4B
-print("Whole Record: ")
-for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}): 
-    print (x)
-result=collection.insert_many([{"Name":"ABC XYZ", "Class": "MSCIT", "Roll_No":"6"},{"Name": "IJK LMN", "Class":"MSCIT", "Roll_No":"7"}]) 
-print("inserted record id: ", result.inserted_ids)
-print("Updated Record: ")
-for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
-    print (x)
-filter={"Name":"MSCIT"}
-update_record=("$set":{"Qualification":"Graduated"}}
-result=collection.update_many(filter, update_record) 
-print("Records Matched: ", result.matched_count) 
-print("Records Modified: ", result.modified_count) 
-print("Updated Record: ")
-for x in collection.find({}, {"_id":0,"Name": 1, "Class": 1, "Roll_No":1}): 
-    print (x)
-filter=({"Sor": [{"Roll_No":"6"},{"Roll_No": "7"}]}) 
-result=collection.delete_many(filter)
-print("Deleted record count: ", result.deleted_count) 
-print("Updated Record: ")
-for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
-    print (x)
 
+col = MongoClient('localhost:27017').Suyog.Prac4B
+print("Whole Record: ")
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+result = col.insert_many([{"Name": "ABC XYZ", "Class": "MSCIT", "Roll_No": 6}, {"Name": "IJK LMN", "Class": "MSCIT", "Roll_No": 7}])
+print("Inserted IDs: ", result.inserted_ids)
+
+print("Updated Record: ")
+col.update_many({"Class": "MSCIT"}, {"$set": {"Qualification": "Graduated"}})
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+print("Deleted count:", col.delete_many({"Roll_No": {"$in": [6, 7]}}).deleted_count)
+for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
 
 
 ------------------------- prac 5 --------------------------------
-
-import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn import metrics
+df = pd.read_csv("E:/sem2/practicals/bda/social.csv")
+x, y = df.iloc[:, [2, 3]], df.iloc[:, 4]
 
-# Print statement
-print("Practical performed by Suyog Shah")
-
-# Input file path (fixed with forward slash)
-InputFile = "E:/sem2/practicals/bda/social.csv"
-
-# Read CSV file
-df = pd.read_csv(InputFile)
-print(df)
-
-# Select features (x) and target (y)
-x = df.iloc[:, [2, 3]]
-y = df.iloc[:, 4]
-print("x:\n", x)
-print("y:\n", y)
-
-# Split data into training and testing sets
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
-print("Training Data: \n", x_train)
-print("Testing Data: \n", x_test)
-
-# Feature scaling
 sc_x = StandardScaler()
-x_train = sc_x.fit_transform(x_train)
-x_test = sc_x.transform(x_test)  # Use transform instead of fit_transform for test data
+x_train, x_test = sc_x.fit_transform(x_train), sc_x.transform(x_test)
 
-# SVM classifier with linear kernel
-classifier = SVC(kernel='linear', random_state=0)
-classifier.fit(x_train, y_train)
-
-# Make predictions
-y_pred = classifier.predict(x_test)
-print("y_pred: \n", y_pred)
-
-# Calculate accuracy
-print("Accuracy Score with Linear Kernel: ")
-print(metrics.accuracy_score(y_test, y_pred))
-
+y_pred = SVC(kernel='linear', random_state=0).fit(x_train, y_train).predict(x_test)
+print("x:\n", x, "\ny:\n", y, "\nTraining Data: \n", x_train, "\nTesting Data: \n", x_test)
+print("y_pred:\n", y_pred)
+print("Accuracy Score with Linear Kernel: ", metrics.accuracy_score(y_test, y_pred))
 
 
 ------------------------- prac 6 --------------------------------
@@ -272,144 +193,53 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
-
-# Print statement
-print("Practical performed by Suyog Shah")
-
-# Read CSV file with corrected file path (forward slashes)
 df = pd.read_csv("E:/sem2/practicals/bda/Social_Network_Ads.csv")
-print(df)
-
-# Selecting features (Age, EstimatedSalary) and target (Purchased)
-X = df[["Age", "EstimatedSalary"]]
-Y = df["Purchased"]
-
-# Splitting data into training and testing sets
+X, Y = df[["Age", "EstimatedSalary"]], df["Purchased"]
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, random_state=42)
+print(df)
 print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
 
-# Feature scaling with MinMaxScaler
 scaler = MinMaxScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+X_train_s, X_test_s = scaler.fit_transform(X_train), scaler.transform(X_test)
+clf = DecisionTreeClassifier().fit(X_train_s, Y_train)
+Y_pred = clf.predict(X_test_s)
 
-# Converting X_test_scaled into a DataFrame
-X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=["Age", "EstimatedSalary"], index=X_test.index)
+X_test_df = pd.DataFrame(X_test_s, columns=["Age", "EstimatedSalary"], index=X_test.index)
+plt.scatter(X_test_df[Y_test == 0]["Age"], X_test_df[Y_test == 0]["EstimatedSalary"], c='yellow', alpha=0.7, label="Not Purchased")
+plt.scatter(X_test_df[Y_test == 1]["Age"], X_test_df[Y_test == 1]["EstimatedSalary"], c='green', alpha=0.7, label="Purchased")
+plt.xlabel("Age (Scaled)"); plt.ylabel("Estimated Salary (Scaled)")
+plt.legend(); plt.show()
 
-# Training Decision Tree Classifier
-model_DT = DecisionTreeClassifier()
-model_DT.fit(X_train_scaled, Y_train)
+print("Model Accuracy:", clf.score(X_test_s, Y_test))
 
-# Making predictions
-Y_predict = model_DT.predict(X_test_scaled)
-
-# Plotting the data points
-plt.scatter(X_test_scaled_df[Y_test == 0]['Age'], X_test_scaled_df[Y_test == 0]['EstimatedSalary'], c='yellow', alpha=0.7, label="Not Purchased")
-plt.scatter(X_test_scaled_df[Y_test == 1]['Age'], X_test_scaled_df[Y_test == 1]['EstimatedSalary'], c='green', alpha=0.7, label="Purchased")
-plt.xlabel("Age (Scaled)")
-plt.ylabel("Estimated Salary (Scaled)")
-plt.legend()
-plt.show()
-
-# Displaying model accuracy
-print("Model Accuracy:", model_DT.score(X_test_scaled, Y_test))
-
-------------------------- prac 7 --------------------------------
-
+---------------------- prac 7 --------------------------------
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
+docs = ["The car is fast", "The bike is slow", "The car is fast, bike is slow"]
+vec = TfidfVectorizer()
+mat = vec.fit_transform(docs).toarray()
+print(pd.DataFrame(mat, columns=vec.get_feature_names_out()))
 
-print("Practical performed by Suyog Shah")
-
-# Sample documents for TF-IDF transformation
-documents = [
-    "The car is fast",
-    "The bike is slow",
-    "The car is fast, bike is slow"
-]
-
-# Initialize the TF-IDF vectorizer
-vectorizer = TfidfVectorizer()
-
-# Transform the documents into a TF-IDF matrix
-tfid_matrix = vectorizer.fit_transform(documents)
-
-# Get the feature names (words)
-feature_names = vectorizer.get_feature_names_out()
-
-# Convert the TF-IDF matrix to an array
-tfid_array = tfid_matrix.toarray()
-
-# Create a DataFrame for better readability
-df = pd.DataFrame(tfid_array, columns=feature_names)
-
-# Print the DataFrame showing the TF-IDF values
-print(df)
 
 ------------------------- prac 8 --------------------------------
-
-import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-import nltk
+import pandas as pd, matplotlib.pyplot as plt, numpy as np, nltk
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import ConfusionMatrixDisplay
+df = pd.read_csv("E:/sem2/practicals/bda/Tweets.csv")
+print("Reading Data Set\n", df.head(2), df.shape)
 
-print("Practical performed by Suyog Shah")
+df['airline'].value_counts().plot.pie(autopct="%.1f%%", startangle=90, title='Airline Distribution'); plt.show()
+df['airline_sentiment'].value_counts().plot.pie(autopct="%.1f%%", startangle=90, title='Sentiment Distribution'); plt.legend(loc='best'); plt.show()
 
-# Download necessary NLTK data
-nltk.download('punkt')
+x, y = df['text'], df['airline_sentiment']
+xt, xs, yt, ys = train_test_split(x, y, test_size=0.2, random_state=42)
+v = CountVectorizer(); xt, xs = v.fit_transform(xt), v.transform(xs)
+m = LogisticRegression(max_iter=1000).fit(xt, yt)
+ConfusionMatrixDisplay.from_predictions(ys, m.predict(xs), cmap='Blues'); plt.title('Confusion Matrix'); plt.show()
+print(f'Accuracy: {np.mean(m.predict(xs)==ys):.2f}')
 
-# Read the dataset
-Tweets_data = pd.read_csv("E:/sem2/practicals/bda/Tweets.csv")
-print("Reading Data Set\n", Tweets_data.head(2), Tweets_data.shape)
-
-# Pie chart for airline distribution
-pie_plot1 = Tweets_data['airline'].value_counts()
-pie_plot1.plot(kind="pie", autopct="%2.1f%%", startangle=90)
-plt.title('Airline Distribution')
-plt.show()
-print('\n', pie_plot1.head(2))
-
-# Pie chart for sentiment distribution
-pie_plot2 = Tweets_data['airline_sentiment'].value_counts()
-pie_plot2.plot(kind="pie", autopct="%2.1f%%", startangle=90)
-plt.title('Sentiment Distribution')
-plt.legend(pie_plot2.index, loc='best')
-plt.show()
-print("\n", pie_plot2.head(2))
-
-# Prepare features and target variable
-X = Tweets_data['text']
-y = Tweets_data['airline_sentiment']
-
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Vectorization
-vectorizer = CountVectorizer()
-X_train_vectorized = vectorizer.fit_transform(X_train)
-X_test_vectorized = vectorizer.transform(X_test)
-
-# Train the model
-model = LogisticRegression(max_iter=1000)
-model.fit(X_train_vectorized, y_train)
-
-# Predictions
-y_pred = model.predict(X_test_vectorized)
-
-# Confusion matrix
-cm = confusion_matrix(y_test, y_pred, labels=model.classes_)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
-disp.plot(cmap=plt.cm.Blues)
-plt.title('Confusion Matrix')
-plt.show()
-
-# Accuracy
-accuracy = np.mean(y_pred == y_test)
-print(f'Accuracy: {accuracy:.2f}')
 
 ------------------------- prac 9 --------------------------------
 
