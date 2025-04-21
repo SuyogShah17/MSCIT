@@ -1,3 +1,19 @@
+1 --	Implementing k-means classification Technique. 
+2 --	Implement word count/frequency programs using map reduce. 
+3-A 	Implement Linear Regression using following raw data. 
+	1) Using homeprices 
+	2) Using weightwaist. 
+	3) Using canada_per_capita_income. 
+3-B --	Implement Logistic Regression. 
+4-- Implement a application that stores big data in MongoDB and manipulate it using python. 
+	A)  Using insert_one, update_one and delete_one. 
+	B) Using insert_many, update_many and delete_many. 
+5--	Implement SVM 
+Classification Technique. 
+6--  	Implement Decision Tree Classification Technique. 
+7--  	Text Analysis 
+Implementation. 
+8--  	Sentiment Analysis Implementation. 
 ---------------------------- Prac 1 ---------------------------------------------
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
