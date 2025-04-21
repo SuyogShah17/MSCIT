@@ -21,10 +21,8 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
-
 data = pd.get_dummies(pd.read_csv("E:/sem2/practicals/bda/Wholesalecustomersdata.csv"), columns=['Channel', 'Region'])
 data_scaled = MinMaxScaler().fit_transform(data)
-
 plt.plot(range(1, 15), [KMeans(n_clusters=k).fit(data_scaled).inertia_ for k in range(1, 15)], 'r:*')
 plt.xlabel('k')
 plt.ylabel('Sum of Squared Distances')
