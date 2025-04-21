@@ -3,7 +3,6 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
-print("Practical Performed By Shubham Ghosalkar")
 data pd.read_csv ("C:/Users/shubham ghosalkar/Downloads/Wholesale customersdata.csv")
 categorical_features = ['Channel', 'Region']
 continuous_features= ['Fresh', 'Milk', 'Grocery', 'Frozen', 'Detergents_Paper', 'Delicassen']
@@ -53,8 +52,7 @@ import pandas as pd
 import numpy as np
 from sklearn import linear_model
 import matplotlib.pyplot as plt
-print ("Practical Performed By Shubham Ghosalkar")
-df = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/homeprices.csv") 
+df = pd.read_csv("C:/Users/r/Downloads/homeprices.csv") 
 print(df)
 plt.scatter(df['area'], df['price'], color='red', marker='.', label='Actual Data') 
 plt.xlabel('Area (sq ft)')
@@ -78,7 +76,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import linear_model
 import numpy as np
-print("Practical Performed By Shubham Ghosalkar")
 data=pd.read_csv("C:/Users/shubham ghosalkar/Downloads/weightwaist.csv - Sheet1.csv")
 print(data)
 print(data.shape)
@@ -117,7 +114,6 @@ import pandas as pd
 import numpy as np
 from sklearn import linear_model
 import matplotlib.pyplot as plt
-print("Practical Performed By Shubham Ghosalkar")
 df = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/canada_per_capita_income.csv")
 print (df)
 plt.scatter(df['year'], df ['per capita income (US$)'], color='red', marker='.', label='Actual Data')
@@ -145,7 +141,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split 
 from sklearn.metrics import confusion_matrix
 from sklearn.datasets import make_classification
-print("Practical Performed By Shubham Ghosalkar ")
 x,y = make classification(
   n_samples=100,
   n_features=1,
@@ -266,7 +261,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler 
 from sklearn.svm import SVC
 from sklearn import metrics
-print ("Practical Performed By Shubham Ghosalkar")
 InputFile="C:/Users/shubham ghosalkar/Downloads/social.csv"
 df pd.read_csv(InputFile)
 print(df)
@@ -295,8 +289,8 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
-print("Practical Performed By Shubham Ghosalkar ")
-df pd.read_csv("C:/Users/shubham ghosalkar/Downloads/Social Network_Ads.csv") print (df)
+df pd.read_csv("C:/Users/shubham ghosalkar/Downloads/Social Network_Ads.csv") 
+print (df)
 X=df[["Age", "EstimatedSalary"]]
 Y=df["Purchased"]
 X_train, X_test, Y_train, Y_test train_test_split(X, Y, test_size=0.25, random_state=42)
@@ -320,7 +314,6 @@ print("Model Accuracy:", model_DT.score (X_test_scaled, Y_test))
 
 from sklearn.feature_extraction.text import TfidfVectorizer 
 import pandas as pd
-print("Practical Performed By Shubham Ghosalkar")
 documents=[
     "The car is fast",
     "The bike is slow",
@@ -343,8 +336,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion matrix, ConfusionMatrixDisplay
 nltk.download('punkt')
-print("Practical Performed By Shubham Ghosalkar ")
-Tweets_data = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/Tweets.csv") print ("Reading Data Set \n", Tweets_data.head (2), Tweets_data.shape)
+Tweets_data = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/Tweets.csv") 
+print ("Reading Data Set \n", Tweets_data.head (2), Tweets_data.shape)
 pie_plot1 = Tweets_data['airline'].value_counts()
 pie_plot1.plot(kind="pie", autopct="%2.1f%%", startangle=90) 
 plt.title('Airline Distribution')
