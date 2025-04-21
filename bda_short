@@ -127,7 +127,6 @@ db.Prac.find()
 
 py :--
 from pymongo import MongoClient
-
 col = MongoClient('localhost:27017').Suyog1.Prac
 print("Whole Record: ")
 for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
@@ -144,16 +143,17 @@ for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
 
 --------------------- prac 4b ------------------------
 mongo:- 
-db.Prac4B.insertMany([
+mongosh
+use Suyog1
+db.Prac.insertMany([
 {Name: 'Suyog Shah', Class: 'MScIT', Roll_No: 1}, 
 {Name: 'RadheKrishna', Class: 'MScIT', Roll_No: 2}])
-db.Prac4B.find()
+db.Prac.find()
 
 
 py code :-
 from pymongo import MongoClient
-
-col = MongoClient('localhost:27017').Suyog.Prac4B
+col = MongoClient('localhost:27017').Suyog1.Prac
 print("Whole Record: ")
 for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
 
@@ -239,17 +239,6 @@ v = CountVectorizer(); xt, xs = v.fit_transform(xt), v.transform(xs)
 m = LogisticRegression(max_iter=1000).fit(xt, yt)
 ConfusionMatrixDisplay.from_predictions(ys, m.predict(xs), cmap='Blues'); plt.title('Confusion Matrix'); plt.show()
 print(f'Accuracy: {np.mean(m.predict(xs)==ys):.2f}')
-
-
-------------------------- prac 9 --------------------------------
-
-
-
-------------------------- prac 10 --------------------------------
-
-
-
-
 
 
 
