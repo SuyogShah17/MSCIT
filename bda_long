@@ -234,41 +234,88 @@ for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1})|:
 
 --------------------- prac 4b ------------------------
 mongo:- 
-db.Prac4B.insertOne({Name:'ShubhamGhosalkar',Class:'MScIT',Roll_No:
- 1})  
-db.Prac4B.insertOne({Name:'Shubham Gite',Class:'MScIT',Roll_No:2}) 
-db.Prac4B.insertOne({Name:'Tejas Pednekar',Class:'MScIT',Roll_No:3})  
-db.Prac4B.insertOne({Name:'Suyog Shah',Class:'MScIT',Roll_No:4})  
-db.Prac4B.insertOne({Name:'Yash Yadav',Class:'MScIT',Roll_No:5}) 
+// Insert documents into the collection
+db.Prac4B.insertOne({Name: 'ShubhamGhosalkar', Class: 'MScIT', Roll_No: 1})
+db.Prac4B.insertOne({Name: 'Shubham Gite', Class: 'MScIT', Roll_No: 2})
+db.Prac4B.insertOne({Name: 'Tejas Pednekar', Class: 'MScIT', Roll_No: 3})
+db.Prac4B.insertOne({Name: 'Suyog Shah', Class: 'MScIT', Roll_No: 4})
+db.Prac4B.insertOne({Name: 'Yash Yadav', Class: 'MScIT', Roll_No: 5})
+
+// Display all documents
 db.Prac4B.find()
 
+// Insert additional documents
+db.Prac4B.insertMany([
+    {Name: 'ABC XYZ', Class: 'MSCIT', Roll_No: 6},
+    {Name: 'IJK LMN', Class: 'MSCIT', Roll_No: 7}
+])
+
+// Update documents (set Qualification to "Graduated" where Class is "MSCIT")
+db.Prac4B.updateMany(
+    {Class: 'MSCIT'},
+    {$set: {Qualification: 'Graduated'}}
+)
+
+// Display updated records
+db.Prac4B.find()
+
+// Delete documents where Roll_No is 6 or 7
+db.Prac4B.deleteMany({Roll_No: {$in: [6, 7]}})
+
+// Display final records after deletion
+db.Prac4B.find()
+
+
 py code :-
+# Practical 4-B
 from pymongo import MongoClient
-client=MongoClient ('localhost:27017')
-db=client.Suyog
-collection=db.Prac4B
-print("Whole Record: ")
-for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}): 
-    print (x)
-result=collection.insert_many([{"Name":"ABC XYZ", "Class": "MSCIT", "Roll_No":"6"},{"Name": "IJK LMN", "Class":"MSCIT", "Roll_No":"7"}]) 
-print("inserted record id: ", result.inserted_ids)
-print("Updated Record: ")
-for x in collection.find({},{"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
-    print (x)
-filter={"Name":"MSCIT"}
-update_record=("$set":{"Qualification":"Graduated"}}
-result=collection.update_many(filter, update_record) 
-print("Records Matched: ", result.matched_count) 
-print("Records Modified: ", result.modified_count) 
-print("Updated Record: ")
-for x in collection.find({}, {"_id":0,"Name": 1, "Class": 1, "Roll_No":1}): 
-    print (x)
-filter=({"Sor": [{"Roll_No":"6"},{"Roll_No": "7"}]}) 
-result=collection.delete_many(filter)
-print("Deleted record count: ", result.deleted_count) 
-print("Updated Record: ")
-for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
-    print (x)
+
+# Connect to MongoDB
+client = MongoClient("localhost:27017")
+db = client.Suyog
+collection = db.Prac4B
+
+print("Practical performed by Suyog Shah")
+
+# 1. Display initial records
+print("\nInitial Records:")
+for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}):
+    print(x)
+
+# 2. Insert multiple records using insert_many()
+new_data = [
+    {"Name": "ABC XYZ", "Class": "MScIT", "Roll_No": 6},
+    {"Name": "IJK LMN", "Class": "MScIT", "Roll_No": 7}
+]
+result = collection.insert_many(new_data)
+print("\nInserted Record IDs:", result.inserted_ids)
+
+# 3. Display after insertion
+print("\nRecords After Insertion:")
+for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}):
+    print(x)
+
+# 4. Update all records where Class is "MScIT"
+update_filter = {"Class": "MScIT"}
+update_data = {"$set": {"Qualification": "Graduated"}}
+result = collection.update_many(update_filter, update_data)
+print("\nRecords Matched:", result.matched_count)
+print("Records Modified:", result.modified_count)
+
+# 5. Display after update
+print("\nRecords After Update:")
+for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1, "Qualification": 1}):
+    print(x)
+
+# 6. Delete records where Roll_No is 6 or 7
+delete_filter = {"Roll_No": {"$in": [6, 7]}}
+result = collection.delete_many(delete_filter)
+print("\nDeleted Record Count:", result.deleted_count)
+
+# 7. Final display
+print("\nFinal Records:")
+for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1, "Qualification": 1}):
+    print(x)
 
 
 
