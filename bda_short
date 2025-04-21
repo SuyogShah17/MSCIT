@@ -44,16 +44,6 @@ db.wordcount.mapReduce(
 )
 db.word.find()
 
-
-------------------- prac 7 --------------------------------
-from sklearn.feature_extraction.text import TfidfVectorizer
-import pandas as pd
-docs = ["The car is fast", "The bike is slow", "The car is fast, bike is slow"]
-vec = TfidfVectorizer()
-mat = vec.fit_transform(docs).toarray()
-print(pd.DataFrame(mat, columns=vec.get_feature_names_out()))
-
-
 ----------------- prac 4a ---------------------------
 momgo :---
 mongosh
@@ -102,6 +92,16 @@ for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
 
 print("Deleted count:", col.delete_many({"Roll_No": {"$in": [6, 7]}}).deleted_count)
 for x in col.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No": 1}): print(x)
+
+------------------- prac 7 --------------------------------
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
+docs = ["The car is fast", "The bike is slow", "The car is fast, bike is slow"]
+vec = TfidfVectorizer()
+mat = vec.fit_transform(docs).toarray()
+print(pd.DataFrame(mat, columns=vec.get_feature_names_out()))
+
+
 
 
 ---------------------- prac 3a-1 --------------------------------------------------------------
