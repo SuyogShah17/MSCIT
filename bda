@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
-data pd.read_csv("E:\sem2\practicals\bda\Wholesalecustomersdata.csv")
+data = pd.read_csv("E:/sem2/practicals/bda/Wholesalecustomersdata.csv")
 categorical_features = ['Channel', 'Region']
 continuous_features= ['Fresh', 'Milk', 'Grocery', 'Frozen', 'Detergents_Paper', 'Delicassen']
 data = pd.get_dummies(data, columns=categorical_features)
@@ -51,84 +51,107 @@ import pandas as pd
 import numpy as np
 from sklearn import linear_model
 import matplotlib.pyplot as plt
-df = pd.read_csv("E:\sem2\practicals\bda\homeprices.csv") 
+print("Practical performed by Suyog Shah")
+df = pd.read_csv(r"E:\sem2\practicals\bda\homeprices.csv")
 print(df)
-plt.scatter(df['area'], df['price'], color='red', marker='.', label='Actual Data') 
+plt.scatter(df['area'], df['price'], color='red', marker='.', label='Actual Data')
 plt.xlabel('Area (sq ft)')
 plt.ylabel('Price')
-X=df[['area']]
-y=df['price']
-model=linear_model.LinearRegression()
-model.fit(x, y)
-y_pred=model.predict(X)
-plt.plot(df['area'], y_pred, color-'blue', label='Best Fit Line')
+X = df[['area']]
+y = df['price']
+model = linear_model.LinearRegression()
+model.fit(X, y)
+y_pred = model.predict(X)
+plt.plot(df['area'], y_pred, color='blue', label='Best Fit Line')
 plt.legend()
 plt.show()
-predicted_price=model.predict([[1500]])
-print("Predicted price for 1500 sq ft:', predicted_price[0])
+predicted_price = model.predict(pd.DataFrame({'area': [1500]}))
+print("Predicted price for 1500 sq ft:", predicted_price[0])
 print('Model Coefficient:', model.coef_[0])
 print('Model Intercept:', model.intercept_)
 
+
 --------------------------------------- prac 3a-2 --------------------------------------------------------------
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import linear_model
 import numpy as np
-data=pd.read_csv("E:\sem2\practicals\bda\weightwaist.csv - Sheet1.csv")
+print("Practical performed by Suyog Shah")
+# Load data
+data = pd.read_csv(r"E:\sem2\practicals\bda\weightwaist.csv - Sheet1.csv")
 print(data)
 print(data.shape)
+# Plot original data
 data.plot(kind='scatter', x='waist_cm', y='weight_kg')
 plt.show()
+# Correlation
 print(data.corr())
-waist=pd.DataFrame(data['waist_cm'])
-weight=pd.DataFrame(data['weight_kg'])
+# Input and output
+waist = pd.DataFrame(data['waist_cm'])
+weight = pd.DataFrame(data['weight_kg'])
 print(waist)
 print(weight)
-1m=linear_model.Linear Regression() 
-model=lm.fit(waist, weight)
-print(model.coef_)
-print(model.intercept_)
-print(model.score(waist, weight))
-Waist_new=np.array([97])
-#print("97", Waist_new)
-Waist_new=Waist_new.reshape(-1,1)
-Weight_predict=model.predict (Waist_new)
-print(Weight_predict)
-x=([67,78,94])
-x=pd.DataFrame(x)
-y=model.predict(x)
-y=pd.DataFrame(y)
-df=pd.concat([x, y), axis=1, keys=['Waist_new', 'Weight_predicted']) 
+# Train model
+lm = linear_model.LinearRegression()
+model = lm.fit(waist, weight)
+# Model info
+print("Model Coefficient:", model.coef_)
+print("Model Intercept:", model.intercept_)
+print("Model Score (R^2):", model.score(waist, weight))
+# Predict for waist = 97
+Waist_new = pd.DataFrame({'waist_cm': [97]})
+Weight_predict = model.predict(Waist_new)
+print("Predicted weight for waist 97cm:", Weight_predict)
+# Predict for multiple new waists
+x = pd.DataFrame({'waist_cm': [67, 78, 94]})
+y = model.predict(x)
+y = pd.DataFrame(y, columns=['Weight_predicted'])
+df = pd.concat([x, y], axis=1)
 print(df)
+# Plot again with regression line and prediction point
 data.plot(kind='scatter', x='waist_cm', y='weight_kg')
-plt.plot(waist, model.predict (waist), color='Red', linewidth=2) 
+plt.plot(waist, model.predict(waist), color='red', linewidth=2)
 plt.scatter(Waist_new, Weight_predict, color='black')
 plt.show()
 
 
 ---------------------- prac 3a-3 -----------------------------------------
 
+# Practical performed by Suyog Shah
+
 import pandas as pd
-import numpy as np
-from sklearn import linear_model
 import matplotlib.pyplot as plt
-df = pd.read_csv("E:\sem2\practicals\bda\canada_per_capita_income.csv")
+from sklearn import linear_model
+print("Practical performed by Suyog Shah")
+# Load dataset
+df = pd.read_csv("E:/sem2/practicals/bda/canada_per_capita_income.csv")
 print(df)
-plt.scatter(df['year'], df ['per capita income (US$)'], color='red', marker='.', label='Actual Data')
+
+# Plot the data
+plt.scatter(df['year'], df['per capita income (US$)'], color='green', marker='o')
 plt.xlabel('Year')
 plt.ylabel('Per Capita Income (US$)')
-X=df[['year']]
-y=df['per capita income (US$)']
+plt.title('Canada Per Capita Income Over Years')
+
+# Train model
 model = linear_model.LinearRegression()
-model.fit(x, y)
-y_pred=model.predict (X)
-plt.plot(df['year'], y_pred, color='blue', label='Best Fit Line')
-plt.legend()
+X = df[['year']]
+y = df['per capita income (US$)']
+model.fit(X, y)
+
+# Plot prediction line
+plt.plot(df['year'], model.predict(X), color='blue', linewidth=2)
 plt.show()
-predicted_income=model.predict([[2029]])
-print('Predicted per capita income for 2029:', predicted_income [0])
-print('Model Coefficient:', model.coef_[0])
-print('Model Intercept:', model.intercept_)
+
+# Predict for year 2025
+income_2025 = model.predict([[2025]])
+print("Predicted income for 2025:", income_2025[0])
+print("Model Coefficient:", model.coef_[0])
+print("Model Intercept:", model.intercept_)
+print("Model Score (R^2):", model.score(X, y))
+
+
 
 
 ----------------------prac 3b ------------------------------
@@ -254,72 +277,129 @@ for x in collection.find({}, {"_id": 0, "Name": 1, "Class": 1, "Roll_No":1}):
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.model_selection import train_test_split 
-from sklearn.preprocessing import StandardScaler 
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn import metrics
-InputFile="E:\sem2\practicals\bda\social.csv"
-df=pd.read_csv(InputFile)
+
+# Print statement
+print("Practical performed by Suyog Shah")
+
+# Input file path (fixed with forward slash)
+InputFile = "E:/sem2/practicals/bda/social.csv"
+
+# Read CSV file
+df = pd.read_csv(InputFile)
 print(df)
-x=df.iloc[:, [2,3]]
-y=df.iloc[:,4]
-print ("x:\n",x)
-print ("y:\n",y)
-x_train, x_test, y_train, y_test=train_test_split(x, y, test_size=0.25, random_state=0) 
-print("Training Data: \n",x_train)
-print ("Testing Data: \n",x_test)
-sc_x=StandardScaler()
-x_train=sc_x.fit_transform(x_train)
-k_test=sc_x.fit_transform(x_test)
-classifier=SVC(kernel='linear', random_state=0)
+
+# Select features (x) and target (y)
+x = df.iloc[:, [2, 3]]
+y = df.iloc[:, 4]
+print("x:\n", x)
+print("y:\n", y)
+
+# Split data into training and testing sets
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
+print("Training Data: \n", x_train)
+print("Testing Data: \n", x_test)
+
+# Feature scaling
+sc_x = StandardScaler()
+x_train = sc_x.fit_transform(x_train)
+x_test = sc_x.transform(x_test)  # Use transform instead of fit_transform for test data
+
+# SVM classifier with linear kernel
+classifier = SVC(kernel='linear', random_state=0)
 classifier.fit(x_train, y_train)
-y_pred=classifier.predict(x_test)
-print("y_pred: \n",y_pred)
-print("Accuracy Score with Linear Kernel: ") 
-print(metrics.accuracy_score(y_test, y_pred)) 
+
+# Make predictions
+y_pred = classifier.predict(x_test)
+print("y_pred: \n", y_pred)
+
+# Calculate accuracy
+print("Accuracy Score with Linear Kernel: ")
+print(metrics.accuracy_score(y_test, y_pred))
+
 
 
 ------------------------- prac 6 --------------------------------
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
-df pd.read_csv("E:\sem2\practicals\bda\Social Network_Ads.csv") 
+
+# Print statement
+print("Practical performed by Suyog Shah")
+
+# Read CSV file with corrected file path (forward slashes)
+df = pd.read_csv("E:/sem2/practicals/bda/Social_Network_Ads.csv")
 print(df)
-X=df[["Age", "EstimatedSalary"]]
-Y=df["Purchased"]
-X_train, X_test, Y_train, Y_test train_test_split(X, Y, test_size=0.25, random_state=42)
+
+# Selecting features (Age, EstimatedSalary) and target (Purchased)
+X = df[["Age", "EstimatedSalary"]]
+Y = df["Purchased"]
+
+# Splitting data into training and testing sets
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.25, random_state=42)
 print(X_train.shape, Y_train.shape, X_test.shape, Y_test.shape)
-scaler=MinMaxScaler()
-X_train_scaled=scaler.fit_transform(X_train)
-X_test_scaled=scaler.transform(X_test)
-X_test_scaled _df = pd.DataFrame(X_test_scaled, columns=["Age", "EstimatedSalary"], index=X_test.index)
-model_DT=DecisionTreeClassifier()
+
+# Feature scaling with MinMaxScaler
+scaler = MinMaxScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Converting X_test_scaled into a DataFrame
+X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=["Age", "EstimatedSalary"], index=X_test.index)
+
+# Training Decision Tree Classifier
+model_DT = DecisionTreeClassifier()
 model_DT.fit(X_train_scaled, Y_train)
-Y_predict=model_DT.predict(X_test_scaled)
-plt.scatter(X_test_scaled_df [Y_test == 0]['Age'], X_test_scaled_df[Y_test ==0]['EstimatedSalary'], c='yellow', alpha=0.7, label="Not Purchased")
-plt.scatter(X_test_scaled_df [Y_test == 1]['Age'], X_test_scaled_df [Y_test ==1]['EstimatedSalary'], c='green', alpha=0.7, label="Purchased")
+
+# Making predictions
+Y_predict = model_DT.predict(X_test_scaled)
+
+# Plotting the data points
+plt.scatter(X_test_scaled_df[Y_test == 0]['Age'], X_test_scaled_df[Y_test == 0]['EstimatedSalary'], c='yellow', alpha=0.7, label="Not Purchased")
+plt.scatter(X_test_scaled_df[Y_test == 1]['Age'], X_test_scaled_df[Y_test == 1]['EstimatedSalary'], c='green', alpha=0.7, label="Purchased")
 plt.xlabel("Age (Scaled)")
 plt.ylabel("Estimated Salary (Scaled)")
 plt.legend()
 plt.show()
-print("Model Accuracy:", model_DT.score (X_test_scaled, Y_test))
+
+# Displaying model accuracy
+print("Model Accuracy:", model_DT.score(X_test_scaled, Y_test))
 
 ------------------------- prac 7 --------------------------------
 
-from sklearn.feature_extraction.text import TfidfVectorizer 
+from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
-documents=[
+
+print("Practical performed by Suyog Shah")
+
+# Sample documents for TF-IDF transformation
+documents = [
     "The car is fast",
     "The bike is slow",
-    "The car is fast, bike is slow"]
-vectorizer=TfidfVectorizer()
-tfid_matrix=vectorizer.fit_transform(documents)
-feature_names=vectorizer.get_feature_names_out()
-tfid_array=tfid_matrix.toarray()
-df=pd.DataFrame(tfid_array, columns=feature_names)
+    "The car is fast, bike is slow"
+]
+
+# Initialize the TF-IDF vectorizer
+vectorizer = TfidfVectorizer()
+
+# Transform the documents into a TF-IDF matrix
+tfid_matrix = vectorizer.fit_transform(documents)
+
+# Get the feature names (words)
+feature_names = vectorizer.get_feature_names_out()
+
+# Convert the TF-IDF matrix to an array
+tfid_array = tfid_matrix.toarray()
+
+# Create a DataFrame for better readability
+df = pd.DataFrame(tfid_array, columns=feature_names)
+
+# Print the DataFrame showing the TF-IDF values
 print(df)
 
 ------------------------- prac 8 --------------------------------
@@ -331,38 +411,61 @@ import nltk
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+print("Practical performed by Suyog Shah")
+
+# Download necessary NLTK data
 nltk.download('punkt')
-Tweets_data = pd.read_csv("C:/Users/shubham ghosalkar/Downloads/Tweets.csv") 
-print ("Reading Data Set \n", Tweets_data.head (2), Tweets_data.shape)
+
+# Read the dataset
+Tweets_data = pd.read_csv("E:/sem2/practicals/bda/Tweets.csv")
+print("Reading Data Set\n", Tweets_data.head(2), Tweets_data.shape)
+
+# Pie chart for airline distribution
 pie_plot1 = Tweets_data['airline'].value_counts()
-pie_plot1.plot(kind="pie", autopct="%2.1f%%", startangle=90) 
+pie_plot1.plot(kind="pie", autopct="%2.1f%%", startangle=90)
 plt.title('Airline Distribution')
 plt.show()
-print('\n', pie_plotl.head(2))
-pie_plot2= Tweets_data['airline_sentiment').value_counts()
-pie_plot2.plot(kind-"pie", autopot="%2.1f%%", startangle=90)
+print('\n', pie_plot1.head(2))
+
+# Pie chart for sentiment distribution
+pie_plot2 = Tweets_data['airline_sentiment'].value_counts()
+pie_plot2.plot(kind="pie", autopct="%2.1f%%", startangle=90)
 plt.title('Sentiment Distribution')
 plt.legend(pie_plot2.index, loc='best')
 plt.show()
 print("\n", pie_plot2.head(2))
-X=Tweets_data['text']
-y= Tweets_data['airline_sentiment']
-X_train, X_test, y_train, y_test=train_test_split(x, y, test_size=0.2, random_state=42) 
+
+# Prepare features and target variable
+X = Tweets_data['text']
+y = Tweets_data['airline_sentiment']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Vectorization
 vectorizer = CountVectorizer()
-X_train_vectorized = vectorizer.fit_transform(X_train) 
+X_train_vectorized = vectorizer.fit_transform(X_train)
 X_test_vectorized = vectorizer.transform(X_test)
+
+# Train the model
 model = LogisticRegression(max_iter=1000)
 model.fit(X_train_vectorized, y_train)
+
+# Predictions
 y_pred = model.predict(X_test_vectorized)
-cm = confusion matrix(y_test, y_pred, labels=model.classes_)
-disp = ConfusionMatrixDisplay(confusion matrix=cm, display_labels-model.classes_) 
+
+# Confusion matrix
+cm = confusion_matrix(y_test, y_pred, labels=model.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=model.classes_)
 disp.plot(cmap=plt.cm.Blues)
 plt.title('Confusion Matrix')
 plt.show()
-accuracy= np.mean (y_pred == y_test)
-print (f'Accuracy: {accuracy:.2f}')
 
+# Accuracy
+accuracy = np.mean(y_pred == y_test)
+print(f'Accuracy: {accuracy:.2f}')
 
 ------------------------- prac 9 --------------------------------
 
