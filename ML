@@ -1,0 +1,253 @@
+Here are all the practicals with just the aim and the clean, runnable code.
+
+### Prac 1a - Data Preprocessing and Exploration
+
+```python
+import sqlite3 as sql
+import pandas as pd
+
+con = sql.connect('data/classic_rock.db')
+query = '''
+SELECT Artist, Release_Year, COUNT(*) AS num_songs, AVG(PlayCount) AS avg_plays
+FROM rock_songs
+GROUP BY Artist, Release_Year
+ORDER BY num_songs DESC;
+'''
+observations = pd.read_sql(query, con)
+print("Top artists by number of songs in a year:")
+print(observations.head())
+```
+
+-----
+
+### Prac 1b - Data Preprocessing and Exploration
+
+```python
+import sqlite3 as sql
+import pandas as pd
+
+con = sql.connect('data/baseball.db')
+best_query = '''
+SELECT playerID, SUM(GP) AS num_games_played
+FROM allstarfull
+GROUP BY playerID
+ORDER BY num_games_played DESC
+LIMIT 3;
+'''
+best_players = pd.read_sql(best_query, con)
+print("Top 3 players by games played:")
+print(best_players.head())
+```
+
+-----
+
+### Prac 1c - Data Preprocessing and Exploration
+
+```python
+import pandas as pd
+
+housing = pd.read_csv("data/Ames_Housing_Data.tsv", sep='\t')
+print(f"Missing values in 'Lot Frontage' before: {housing['Lot Frontage'].isnull().sum()}")
+median_val = housing["Lot Frontage"].median()
+housing["Lot Frontage"].fillna(median_val, inplace=True)
+print(f"Missing values in 'Lot Frontage' after: {housing['Lot Frontage'].isnull().sum()}")
+```
+
+-----
+
+### Prac 1d - Data Preprocessing and Exploration
+
+```python
+import pandas as pd
+
+df = pd.read_csv("data/Ames_Housing_Data.tsv", sep='\t')
+print("Original 'House Style' column:")
+print(df['House Style'].head())
+house_style_dummies = pd.get_dummies(df['House Style'], prefix='Style', drop_first=True)
+print("\n'House Style' after one-hot encoding:")
+print(house_style_dummies.head())
+```
+
+-----
+
+### Prac 3-A,B - Linear Programming using Least Square
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+X = 2 * np.random.rand(100, 1)
+y = 4 + 3 * X + np.random.randn(100, 1)
+X_b = np.c_[np.ones((100, 1)), X]
+theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(y)
+print(f"Calculated Intercept (should be ~4): {theta_best[0][0]}")
+print(f"Calculated Slope (should be ~3): {theta_best[1][0]}")
+plt.plot(X, y, "b.")
+X_new = np.array([[0], [2]])
+X_new_b = np.c_[np.ones((2, 1)), X_new]
+y_predict = X_new_b.dot(theta_best)
+plt.plot(X_new, y_predict, "r-", label="Prediction")
+plt.xlabel("$x_1$")
+plt.ylabel("$y$")
+plt.legend()
+plt.show()
+```
+
+-----
+
+### Prac 4a - Discriminative Models (Logistic Regression)
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+
+col_names = ['pregnant', 'glucose', 'bp', 'skin', 'insulin', 'bmi', 'pedigree', 'age', 'label']
+pima = pd.read_csv("data/pima-indians-diabetes.csv", header=None, names=col_names)
+feature_cols = ['pregnant', 'insulin', 'bmi', 'age', 'glucose', 'bp', 'pedigree']
+X = pima[feature_cols]
+y = pima.label
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=16)
+logreg = LogisticRegression(random_state=100, max_iter=200)
+logreg.fit(X_train, y_train)
+y_pred = logreg.predict(X_test)
+cnf_matrix = metrics.confusion_matrix(y_test, y_pred)
+print("Confusion Matrix:")
+print(cnf_matrix)
+```
+
+-----
+
+### Prac 4b - Discriminative Models (K-Nearest Neighbors)
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import metrics
+
+tumor_df = pd.read_csv("data/tumor.csv")
+X = tumor_df.iloc[:, :-1]
+y = tumor_df.iloc[:, -1]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=123)
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train.values.ravel())
+y_pred = knn.predict(X_test)
+print(f"Accuracy for K=5: {metrics.accuracy_score(y_test, y_pred):.4f}")
+```
+
+-----
+
+### Prac 4c - Discriminative Models (Decision Tree)
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+
+tumor_df = pd.read_csv("data/tumor.csv")
+X = tumor_df.iloc[:, :-1]
+y = tumor_df.iloc[:, -1]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=123)
+model = DecisionTreeClassifier(random_state=123)
+model.fit(X_train, y_train.values.ravel())
+preds = model.predict(X_test)
+print(f"Model Accuracy: {metrics.accuracy_score(y_test, preds):.4f}")
+```
+
+-----
+
+### Prac 5a - Generative Models (Gaussian Naive Bayes)
+
+```python
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+X, y = make_classification(n_samples=800, n_features=6, n_informative=2, n_classes=3, random_state=1)
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=125)
+model = GaussianNB()
+model.fit(x_train, y_train)
+y_pred = model.predict(x_test)
+print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+```
+
+-----
+
+### Prac 6a - Probabilistic Models (Bayesian Linear Regression)
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+X = np.linspace(-5, 5, 20)
+y = 2 * X + 1 + np.random.normal(0, 2, X.shape)
+X_design = np.vstack((np.ones_like(X), X)).T
+prior_mean = np.array([0, 0])
+prior_covariance = np.eye(2) * 10
+noise_variance = 4
+posterior_covariance = np.linalg.inv(np.linalg.inv(prior_covariance) + (X_design.T @ X_design) / noise_variance)
+posterior_mean = posterior_covariance @ (np.linalg.inv(prior_covariance) @ prior_mean + (X_design.T @ y) / noise_variance)
+plt.figure(figsize=(10, 6))
+plt.scatter(X, y, label="Observed data", color="blue")
+for _ in range(5):
+    sample_w = np.random.multivariate_normal(posterior_mean, posterior_covariance)
+    y_sample = sample_w[0] + sample_w[1] * X
+    plt.plot(X, y_sample, alpha=0.7)
+plt.title("Bayesian Linear Regression")
+plt.legend()
+plt.show()
+```
+
+-----
+
+### Prac 6b - Probabilistic Models (Gaussian Mixture Model)
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.mixture import GaussianMixture
+import matplotlib.pyplot as plt
+
+data = load_iris()
+X = data.data
+gmm = GaussianMixture(n_components=3, random_state=42)
+y_pred = gmm.fit(X).predict(X)
+plt.figure(figsize=(8, 6))
+plt.scatter(X[:, 2], X[:, 3], c=y_pred, cmap='viridis', marker='o')
+plt.xlabel("Petal Length")
+plt.ylabel("Petal Width")
+plt.title("GMM Clustering of Iris Dataset")
+plt.show()
+```
+
+-----
+
+### Prac 7a - Model Evaluation and Hyperparameter Tuning
+
+```python
+from statistics import mean, stdev
+from sklearn import preprocessing
+from sklearn.model_selection import StratifiedKFold
+from sklearn.linear_model import LogisticRegression
+from sklearn import datasets
+
+cancer = datasets.load_breast_cancer()
+X = cancer.data
+y = cancer.target
+scaler = preprocessing.MinMaxScaler()
+x_scaled = scaler.fit_transform(X)
+lr = LogisticRegression()
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
+accuracies = []
+for train_index, test_index in skf.split(X, y):
+    x_train_fold, x_test_fold = x_scaled[train_index], x_scaled[test_index]
+    y_train_fold, y_test_fold = y[train_index], y[test_index]
+    lr.fit(x_train_fold, y_train_fold)
+    accuracies.append(lr.score(x_test_fold, y_test_fold))
+print(f"Overall (Mean) Accuracy: {mean(accuracies)*100:.2f}%")
+print(f"Standard Deviation: {stdev(accuracies):.4f}")
+```
