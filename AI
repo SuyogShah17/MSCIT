@@ -1,0 +1,496 @@
+Of course. Here is the complete code from your Advanced AI journal, formatted into a single file ready to be copied and pasted into a `.md` file on GitHub.
+
+-----
+
+````markdown
+# MSc IT - Advanced Artificial Intelligence (AAI) Practicals
+
+A collection of Advanced AI practicals for the MSc IT program, prepared by **Suyog Shah (suyog17)**. This file covers key topics including CNN, RNN, NLP, Transformers, Recommendation Systems, Object Detection, GANs, Reinforcement Learning, and Transfer Learning.
+
+---
+### Prac 1A - Implementing a Convolutional Neural Network (CNN)
+```python
+import tensorflow as tf
+from tensorflow.keras import layers, models
+
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+x_train = x_train[..., tf.newaxis] / 255.0
+x_test = x_test[..., tf.newaxis] / 255.0
+
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Flatten(),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(10, activation='softmax')
+])
+
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test), verbose=2)
+````
+
+-----
+
+### Prac 1B - Implementing a Recurrent Neural Network (RNN)
+
+```python
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, SimpleRNN, Dense
+from tensorflow.keras.datasets import imdb
+
+(x_train, y_train), (x_test, y_test) = imdb.load_data(num_words=10000)
+
+x_train = tf.keras.preprocessing.sequence.pad_sequences(x_train, maxlen=500)
+x_test = tf.keras.preprocessing.sequence.pad_sequences(x_test, maxlen=500)
+
+model = Sequential([
+    Embedding(10000, 32),
+    SimpleRNN(32),
+    Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+model.fit(x_train, y_train, epochs=5, validation_data=(x_test, y_test), verbose=2)
+```
+
+-----
+
+### Prac 2 - NLP Model for Sentiment Analysis
+
+```python
+from transformers import pipeline
+
+sentiment_analyzer = pipeline('sentiment-analysis')
+
+def analyze_sentiment(text):
+    result = sentiment_analyzer(text)
+    return result
+
+if __name__ == "__main__":
+    text = "using Natural Language Processing to segregate text data"
+    sentiment = analyze_sentiment(text)
+    print(sentiment)
+```
+
+-----
+
+### Prac 3 - Creating a Chatbot
+
+```python
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
+model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
+
+def chat_with_bot(user_input, history_tensors):
+    new_user_input_ids = tokenizer.encode(user_input + tokenizer.eos_token, return_tensors='pt')
+    bot_input_ids = torch.cat(history_tensors + [new_user_input_ids], dim=-1) if history_tensors else new_user_input_ids
+    history_tensors = model.generate(bot_input_ids, max_length=1000, pad_token_id=tokenizer.eos_token_id)
+    response = tokenizer.decode(history_tensors[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
+    return response, history_tensors
+
+if __name__ == "__main__":
+    history = []
+    print("Chatbot is ready. Type 'exit' to end.")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() in ["exit", "quit"]:
+            print("Bot: Goodbye!")
+            break
+        response, history_tensor_updated = chat_with_bot(user_input, history)
+        history = [history_tensor_updated]
+        print(f"Bot: {response}")
+```
+
+-----
+
+### Prac 4 - Developing a Recommendation System
+
+```python
+import os
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Embedding, Flatten, Concatenate, Dense
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
+url = "[https://files.grouplens.org/datasets/movielens/ml-latest-small.zip](https://files.grouplens.org/datasets/movielens/ml-latest-small.zip)"
+zip_path_dir = os.path.dirname(tf.keras.utils.get_file("ml-latest-small.zip", origin=url, extract=True))
+ratings_file = os.path.join(zip_path_dir, "ml-latest-small", "ratings.csv")
+df = pd.read_csv(ratings_file)
+
+user_encoder = LabelEncoder()
+movie_encoder = LabelEncoder()
+df['userId'] = user_encoder.fit_transform(df['userId'])
+df['movieId'] = movie_encoder.fit_transform(df['movieId'])
+
+num_users = df['userId'].nunique()
+num_movies = df['movieId'].nunique()
+
+X = df[['userId', 'movieId']].values
+y = df['rating'].values
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+def build_model(num_users, num_movies, embed_dim=50):
+    user_input = Input(shape=(1,), name="User_Input")
+    movie_input = Input(shape=(1,), name="Movie_Input")
+    user_embedding = Embedding(input_dim=num_users, output_dim=embed_dim, name="User_Embedding")(user_input)
+    movie_embedding = Embedding(input_dim=num_movies, output_dim=embed_dim, name="Movie_Embedding")(movie_input)
+    user_vec = Flatten(name="Flatten_User")(user_embedding)
+    movie_vec = Flatten(name="Flatten_Movie")(movie_embedding)
+    concat = Concatenate()([user_vec, movie_vec])
+    dense = Dense(128, activation="relu")(concat)
+    output = Dense(1)(dense)
+    return Model(inputs=[user_input, movie_input], outputs=output)
+
+model = build_model(num_users, num_movies)
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+model.fit([x_train[:, 0], x_train[:, 1]], y_train, epochs=5, batch_size=64, verbose=1)
+loss, mae = model.evaluate([x_test[:, 0], x_test[:, 1]], y_test, verbose=0)
+print(f"\nTest MAE: {mae:.4f}")
+```
+
+-----
+
+### Prac 5 - Computer Vision Project (Object Detection)
+
+```python
+import torch
+import os
+
+try:
+    model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+except Exception as e:
+    print(f"Error loading model: {e}")
+    exit()
+
+image_filename = 'my_image.jpg'
+
+if os.path.exists(image_filename):
+    print(f"Performing detection on {image_filename}...")
+    results = model(image_filename)
+    print("\nDetection Results (Printed):")
+    results.print()
+    print("\nDisplaying image with detected objects...")
+    results.show()
+else:
+    print(f"Error: Image file not found at {image_filename}")
+```
+
+-----
+
+### Prac 6 - Training a Generative Model (GAN)
+
+```python
+from diffusers import StableDiffusionPipeline
+import torch
+
+model_id = "runwayml/stable-diffusion-v1-5"
+pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float32)
+prompt = "A majestic castle on a hilltop during sunset, surrounded by clouds, fantasy art"
+image = pipe(prompt).images[0]
+image.save("generated_image.png")
+print("Image saved as 'generated_image.png'")
+```
+
+-----
+
+### Prac 7 - Applying Reinforcement Learning
+
+```python
+import numpy as np
+
+size, episodes = 5, 5000
+alpha, gamma, epsilon = 0.1, 0.9, 0.1
+goal = (4, 4)
+obstacles = {(1, 1), (2, 2), (3, 3)}
+actions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+q = np.zeros((size, size, 4))
+
+def valid(x, y):
+    return 0 <= x < size and 0 <= y < size and (x, y) not in obstacles
+
+def act(x, y):
+    return np.random.randint(4) if np.random.rand() < epsilon else np.argmax(q[x, y])
+
+for _ in range(episodes):
+    x, y = 0, 0
+    while (x, y) != goal:
+        a = act(x, y)
+        dx, dy = actions[a]
+        nx, ny = x + dx, y + dy
+        if not valid(nx, ny):
+            nx, ny, r = x, y, -1
+        elif (nx, ny) == goal:
+            r = 100
+        else:
+            r = -0.1
+        q[x, y, a] += alpha * (r + gamma * np.max(q[nx, ny]) - q[x, y, a])
+        x, y = nx, ny
+
+path = [(0, 0)]
+x, y = 0, 0
+while (x, y) != goal and len(path) < 20:
+    a = np.argmax(q[x, y])
+    dx, dy = actions[a]
+    x, y = x + dx, y + dy
+    if not valid(x,y):
+        break
+    path.append((x,y))
+
+print("Learned Path to Goal:", path)
+```
+
+-----
+
+### Prac 8 - Utilizing Transfer Learning
+
+```python
+import tensorflow as tf
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Flatten, Dense
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(150, 150, 3))
+base_model.trainable = False
+
+model = Sequential([
+    base_model,
+    Flatten(),
+    Dense(256, activation='relu'),
+    Dense(1, activation='sigmoid')
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+model.summary()
+```
+
+-----
+
+### Prac 9 - Time Series Forecasting
+
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from sklearn.preprocessing import MinMaxScaler
+
+file_path = "daily-min-temperatures.csv"
+data = pd.read_csv(file_path)
+data['Temp'] = pd.to_numeric(data['Temp'], errors='coerce')
+data.dropna(subset=['Temp'], inplace=True)
+temp_data = data['Temp'].values.reshape(-1, 1)
+
+scaler = MinMaxScaler()
+data_scaled = scaler.fit_transform(temp_data)
+
+def create_sequences(data, step=10):
+    X, y = [], []
+    for i in range(len(data) - step):
+        X.append(data[i:i + step])
+        y.append(data[i + step])
+    return np.array(X), np.array(y)
+
+X, y = create_sequences(data_scaled)
+train_size = int(len(X) * 0.8)
+X_train, X_test = X[:train_size], X[train_size:]
+y_train, y_test = y[:train_size], y[train_size:]
+
+model = Sequential([
+    LSTM(50, input_shape=(X_train.shape[1], 1)),
+    Dense(1)
+])
+model.compile(optimizer='adam', loss='mse')
+model.fit(X_train, y_train, epochs=10, batch_size=32)
+
+pred_scaled = model.predict(X_test)
+pred_inverse = scaler.inverse_transform(pred_scaled)
+actual_inverse = scaler.inverse_transform(y_test)
+
+plt.figure(figsize=(12, 6))
+plt.plot(actual_inverse, label='Actual Temperatures')
+plt.plot(pred_inverse, label='Predicted Temperatures')
+plt.legend()
+plt.title("Temperature Forecast")
+plt.show()
+```
+
+-----
+
+### Prac 10 - Automated ML Pipeline (TPOT)
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tpot import TPOTClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.datasets import load_iris
+
+if __name__ == "__main__":
+    data = load_iris()
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    y = pd.Series(data.target)
+    
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+    
+    tpot = TPOTClassifier(verbose=2, generations=2, population_size=10, random_state=42)
+    print("\nStarting TPOT search...")
+    tpot.fit(X_train, y_train)
+    print("TPOT search complete!")
+    print("\nTest Accuracy:", tpot.score(X_test, y_test))
+```
+
+-----
+
+### Prac 11A - Hyperparameter Tuning (Evolutionary)
+
+```python
+from tpot import TPOTClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
+
+if __name__ == "__main__":
+    data = load_iris()
+    X, y = data.data, data.target
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    tpot = TPOTClassifier(generations=5, population_size=20, verbose=2, random_state=42)
+    print("\nStarting TPOT search...")
+    tpot.fit(X_train, y_train)
+    print("TPOT search complete!")
+    print("\nTest Accuracy:", tpot.score(X_test, y_test))
+```
+
+-----
+
+### Prac 11B - Hyperparameter Tuning (Bayesian)
+
+```python
+import optuna
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+
+optuna.logging.set_verbosity(optuna.logging.WARNING)
+data = load_iris()
+X, y = data.data, data.target
+
+def objective(trial):
+    n_estimators = trial.suggest_int('n_estimators', 10, 200)
+    max_depth = trial.suggest_int('max_depth', 1, 32)
+    model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
+    scores = cross_val_score(model, X, y, cv=3, scoring='accuracy')
+    return scores.mean()
+
+study = optuna.create_study(direction='maximize')
+study.optimize(objective, n_trials=50)
+
+print("Best parameters:", study.best_params)
+print("Best cross-validation accuracy:", study.best_value)
+```
+
+-----
+
+### Prac 12A - Text Generation (GPT-2)
+
+```python
+from transformers import pipeline
+
+generator = pipeline('text-generation', model='gpt2')
+prompt = "Food is"
+generated_text = generator(prompt, max_length=50, num_return_sequences=1)
+print(generated_text[0]['generated_text'])
+```
+
+-----
+
+### Prac 12B - Text Generation (DistilGPT-2)
+
+```python
+from transformers import pipeline
+
+generator = pipeline('text-generation', model='distilgpt2')
+prompt = "Dreams are"
+generated_text = generator(prompt, max_length=50, num_return_sequences=1)
+print(generated_text[0]['generated_text'])
+```
+
+-----
+
+### Prac 13 - GAN for Image Generation
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+latent_dim, img_shape, batch_size, epochs = 100, (1, 28, 28), 64, 20
+
+class Generator(nn.Module):
+    def __init__(self):
+        super(Generator, self).__init__()
+        self.model = nn.Sequential(nn.Linear(latent_dim, 128), nn.ReLU(), nn.Linear(128, 28*28), nn.Tanh())
+    def forward(self, z):
+        img = self.model(z)
+        return img.view(img.size(0), *img_shape)
+
+class Discriminator(nn.Module):
+    def __init__(self):
+        super(Discriminator, self).__init__()
+        self.model = nn.Sequential(nn.Flatten(), nn.Linear(28*28, 128), nn.ReLU(), nn.Linear(128, 1), nn.Sigmoid())
+    def forward(self, img):
+        return self.model(img)
+
+generator, discriminator = Generator(), Discriminator()
+adversarial_loss = nn.BCELoss()
+optimizer_G = optim.Adam(generator.parameters(), lr=0.0002)
+optimizer_D = optim.Adam(discriminator.parameters(), lr=0.0002)
+
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize([0.5], [0.5])])
+dataloader = DataLoader(datasets.MNIST('.', train=True, download=True, transform=transform), batch_size=batch_size, shuffle=True)
+
+for epoch in range(epochs):
+    for i, (imgs, _) in enumerate(dataloader):
+        valid = torch.ones(imgs.size(0), 1)
+        fake = torch.zeros(imgs.size(0), 1)
+        real_imgs = imgs
+        
+        optimizer_D.zero_grad()
+        z = torch.randn(imgs.size(0), latent_dim)
+        gen_imgs = generator(z)
+        real_loss = adversarial_loss(discriminator(real_imgs), valid)
+        fake_loss = adversarial_loss(discriminator(gen_imgs.detach()), fake)
+        d_loss = (real_loss + fake_loss) / 2
+        d_loss.backward()
+        optimizer_D.step()
+        
+        optimizer_G.zero_grad()
+        g_loss = adversarial_loss(discriminator(gen_imgs), valid)
+        g_loss.backward()
+        optimizer_G.step()
+        
+    print(f"[Epoch {epoch}/{epochs}] [D loss: {d_loss.item():.4f}] [G loss: {g_loss.item():.4f}]")
+```
+
+```
+```
