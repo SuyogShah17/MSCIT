@@ -1,14 +1,5 @@
-Of course. Here is the complete code from your Advanced AI journal, formatted into a single file ready to be copied and pasted into a `.md` file on GitHub.
-
------
-
-````markdown
-# MSc IT - Advanced Artificial Intelligence (AAI) Practicals
-
-A collection of Advanced AI practicals for the MSc IT program, prepared by **Suyog Shah (suyog17)**. This file covers key topics including CNN, RNN, NLP, Transformers, Recommendation Systems, Object Detection, GANs, Reinforcement Learning, and Transfer Learning.
-
----
-### Prac 1A - Implementing a Convolutional Neural Network (CNN)
+PRac 4,10,11, 13 - ignore
+ Prac 1A - Implementing a Convolutional Neural Network (CNN)
 ```python
 import tensorflow as tf
 from tensorflow.keras import layers, models
@@ -111,58 +102,6 @@ if __name__ == "__main__":
         history = [history_tensor_updated]
         print(f"Bot: {response}")
 ```
-
------
-
-### Prac 4 - Developing a Recommendation System
-
-```python
-import os
-import pandas as pd
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Embedding, Flatten, Concatenate, Dense
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-
-url = "[https://files.grouplens.org/datasets/movielens/ml-latest-small.zip](https://files.grouplens.org/datasets/movielens/ml-latest-small.zip)"
-zip_path_dir = os.path.dirname(tf.keras.utils.get_file("ml-latest-small.zip", origin=url, extract=True))
-ratings_file = os.path.join(zip_path_dir, "ml-latest-small", "ratings.csv")
-df = pd.read_csv(ratings_file)
-
-user_encoder = LabelEncoder()
-movie_encoder = LabelEncoder()
-df['userId'] = user_encoder.fit_transform(df['userId'])
-df['movieId'] = movie_encoder.fit_transform(df['movieId'])
-
-num_users = df['userId'].nunique()
-num_movies = df['movieId'].nunique()
-
-X = df[['userId', 'movieId']].values
-y = df['rating'].values
-x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-def build_model(num_users, num_movies, embed_dim=50):
-    user_input = Input(shape=(1,), name="User_Input")
-    movie_input = Input(shape=(1,), name="Movie_Input")
-    user_embedding = Embedding(input_dim=num_users, output_dim=embed_dim, name="User_Embedding")(user_input)
-    movie_embedding = Embedding(input_dim=num_movies, output_dim=embed_dim, name="Movie_Embedding")(movie_input)
-    user_vec = Flatten(name="Flatten_User")(user_embedding)
-    movie_vec = Flatten(name="Flatten_Movie")(movie_embedding)
-    concat = Concatenate()([user_vec, movie_vec])
-    dense = Dense(128, activation="relu")(concat)
-    output = Dense(1)(dense)
-    return Model(inputs=[user_input, movie_input], outputs=output)
-
-model = build_model(num_users, num_movies)
-model.compile(optimizer='adam', loss='mse', metrics=['mae'])
-model.fit([x_train[:, 0], x_train[:, 1]], y_train, epochs=5, batch_size=64, verbose=1)
-loss, mae = model.evaluate([x_test[:, 0], x_test[:, 1]], y_test, verbose=0)
-print(f"\nTest MAE: {mae:.4f}")
-```
-
------
 
 ### Prac 5 - Computer Vision Project (Object Detection)
 
@@ -330,6 +269,83 @@ plt.title("Temperature Forecast")
 plt.show()
 ```
 
+
+
+### Prac 12A - Text Generation (GPT-2)
+
+```python
+from transformers import pipeline
+
+generator = pipeline('text-generation', model='gpt2')
+prompt = "Food is"
+generated_text = generator(prompt, max_length=50, num_return_sequences=1)
+print(generated_text[0]['generated_text'])
+```
+
+-----
+
+### Prac 12B - Text Generation (DistilGPT-2)
+
+```python
+from transformers import pipeline
+
+generator = pipeline('text-generation', model='distilgpt2')
+prompt = "Dreams are"
+generated_text = generator(prompt, max_length=50, num_return_sequences=1)
+print(generated_text[0]['generated_text'])
+```
+/////////////////////////////////////////
+--------------------------------------------------------------------------------------------------
+### Prac 4 - Developing a Recommendation System
+
+```python
+import os
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Embedding, Flatten, Concatenate, Dense
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+
+url = "[https://files.grouplens.org/datasets/movielens/ml-latest-small.zip](https://files.grouplens.org/datasets/movielens/ml-latest-small.zip)"
+zip_path_dir = os.path.dirname(tf.keras.utils.get_file("ml-latest-small.zip", origin=url, extract=True))
+ratings_file = os.path.join(zip_path_dir, "ml-latest-small", "ratings.csv")
+df = pd.read_csv(ratings_file)
+
+user_encoder = LabelEncoder()
+movie_encoder = LabelEncoder()
+df['userId'] = user_encoder.fit_transform(df['userId'])
+df['movieId'] = movie_encoder.fit_transform(df['movieId'])
+
+num_users = df['userId'].nunique()
+num_movies = df['movieId'].nunique()
+
+X = df[['userId', 'movieId']].values
+y = df['rating'].values
+x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+def build_model(num_users, num_movies, embed_dim=50):
+    user_input = Input(shape=(1,), name="User_Input")
+    movie_input = Input(shape=(1,), name="Movie_Input")
+    user_embedding = Embedding(input_dim=num_users, output_dim=embed_dim, name="User_Embedding")(user_input)
+    movie_embedding = Embedding(input_dim=num_movies, output_dim=embed_dim, name="Movie_Embedding")(movie_input)
+    user_vec = Flatten(name="Flatten_User")(user_embedding)
+    movie_vec = Flatten(name="Flatten_Movie")(movie_embedding)
+    concat = Concatenate()([user_vec, movie_vec])
+    dense = Dense(128, activation="relu")(concat)
+    output = Dense(1)(dense)
+    return Model(inputs=[user_input, movie_input], outputs=output)
+
+model = build_model(num_users, num_movies)
+model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+model.fit([x_train[:, 0], x_train[:, 1]], y_train, epochs=5, batch_size=64, verbose=1)
+loss, mae = model.evaluate([x_test[:, 0], x_test[:, 1]], y_test, verbose=0)
+print(f"\nTest MAE: {mae:.4f}")
+```
+
+-----
+
 -----
 
 ### Prac 10 - Automated ML Pipeline (TPOT)
@@ -405,32 +421,6 @@ study.optimize(objective, n_trials=50)
 
 print("Best parameters:", study.best_params)
 print("Best cross-validation accuracy:", study.best_value)
-```
-
------
-
-### Prac 12A - Text Generation (GPT-2)
-
-```python
-from transformers import pipeline
-
-generator = pipeline('text-generation', model='gpt2')
-prompt = "Food is"
-generated_text = generator(prompt, max_length=50, num_return_sequences=1)
-print(generated_text[0]['generated_text'])
-```
-
------
-
-### Prac 12B - Text Generation (DistilGPT-2)
-
-```python
-from transformers import pipeline
-
-generator = pipeline('text-generation', model='distilgpt2')
-prompt = "Dreams are"
-generated_text = generator(prompt, max_length=50, num_return_sequences=1)
-print(generated_text[0]['generated_text'])
 ```
 
 -----
