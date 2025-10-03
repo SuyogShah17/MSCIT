@@ -1,6 +1,4 @@
-Here are all the practicals with just the aim and the clean, runnable code.
-
-### Prac 1a - Data Preprocessing and Exploration
+ Prac 1a - Data Preprocessing and Exploration
 
 ```python
 import sqlite3 as sql
