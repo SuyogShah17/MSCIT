@@ -1,183 +1,685 @@
- Prac 1a - Data Preprocessing and Exploration
+------------------Practical 1: Data Preprocessing and Exploration-------------------------
 
-```python
-import sqlite3 as sql
+Aim: To perform data preprocessing and exploration on various datasets.
+
+Part 1-A: Database Interaction with pandas
+
+import sqlite3
 import pandas as pd
+import pandas.io.sql as pds
 
-con = sql.connect('data/classic_rock.db')
-query = '''
+path = 'data/classic_rock.db'
+con = sqlite3.Connection(path)
+query = "SELECT * FROM rock_songs;"
+observations = pds.read_sql(query, con)
+observations.head()
+
+query = """
 SELECT Artist, Release_Year, COUNT(*) AS num_songs, AVG(PlayCount) AS avg_plays
 FROM rock_songs
 GROUP BY Artist, Release_Year
-ORDER BY num_songs DESC;
-'''
-observations = pd.read_sql(query, con)
-print("Top artists by number of songs in a year:")
-print(observations.head())
-```
+ORDER BY num_songs desc;
+"""
+observations = pds.read_sql(query, con)
+observations.head()
 
------
+# Code from Page 4
+query = """
+SELECT Artist, Release_Year, COUNT(*) AS num_songs, AVG(PlayCount) AS avg_plays
+FROM rock_songs
+GROUP BY Artist, Release_Year
+ORDER BY num_songs desc;
+"""
+# Use chunksize to create an iterator
+observations_generator = pds.read_sql(query,
+                                      con,
+                                      coerce_float=True,
+                                      parse_dates=["Release_Year"],
+                                      chunksize=5)
 
-### Prac 1b - Data Preprocessing and Exploration
+# Loop through the first 5 chunks and display them
+for index, observations in enumerate(observations_generator):
+    if index < 5:
+        print(f"Observations index: {index}")
+        display(observations)
+---------------------Part 1-B: Querying a Baseball Database---------------------------------------
 
-```python
-import sqlite3 as sql
+import sqlite3 as sq3
+import pandas.io.sql as pds
 import pandas as pd
 
-con = sql.connect('data/baseball.db')
-best_query = '''
-SELECT playerID, SUM(GP) AS num_games_played
+# 1. Connect to the database file
+path = 'data/baseball.db'
+con = sq3.Connection(path)
+
+# 2. Query to see all tables in the database
+all_tables = pds.read_sql('SELECT * FROM sqlite_master', con)
+print("Tables in the database:")
+print(all_tables)
+
+# 3. Query to find the top 3 players
+best_query = """
+SELECT playerID, SUM(GP) AS num_games_played, AVG(startingPos) AS avg_starting_postion
 FROM allstarfull
 GROUP BY playerID
-ORDER BY num_games_played DESC
+ORDER BY num_games_played DESC, avg_starting_postion ASC
 LIMIT 3;
-'''
-best_players = pd.read_sql(best_query, con)
-print("Top 3 players by games played:")
-print(best_players.head())
-```
+"""
+best = pd.read_sql(best_query, con)
+print("\nTop 3 players:")
+print(best.head())
+----------------------------------------Part 1-C: Ames Housing Data Exploration-------------------------------------------
 
------
-
-### Prac 1c - Data Preprocessing and Exploration
-
-```python
 import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from scipy import stats
 
-housing = pd.read_csv("data/Ames_Housing_Data.tsv", sep='\t')
-print(f"Missing values in 'Lot Frontage' before: {housing['Lot Frontage'].isnull().sum()}")
-median_val = housing["Lot Frontage"].median()
-housing["Lot Frontage"].fillna(median_val, inplace=True)
-print(f"Missing values in 'Lot Frontage' after: {housing['Lot Frontage'].isnull().sum()}")
-```
+housing = pd.read_csv("E:/SEM3/Practicals/ML/data/Ames_Housing_Data.tsv", sep='\t')
+housing.head(10)
+housing.info()
+housing['SalePrice'].describe()
 
------
+hous_num = housing.select_dtypes(include=['float64', 'int64'])
+hous_num_corr = hous_num.corr()['SalePrice'][:-1]
+top_features = hous_num_corr[abs(hous_num_corr) > 0.5].sort_values(ascending=False)
+print("There is {} strongly correlated values with SalePrice:\n{}".format(len(top_features), top_features))
 
-### Prac 1d - Data Preprocessing and Exploration
+for i in range(0, len(hous_num.columns), 5):
+    sns.pairplot(data=hous_num, x_vars=hous_num.columns[i:i+5], y_vars=['SalePrice'])
+    
+print("Skewness:%f" % housing['SalePrice'].skew())
+log_transformed = np.log(housing['SalePrice'])
+sp_transformed = sns.distplot(log_transformed)
+plt.show()
+print("Skewness: %f" % (log_transformed).skew())
 
-```python
+duplicate = housing[housing.duplicated(['PID'])]
+housing.index.is_unique
+
+total = housing.isnull().sum().sort_values(ascending=False)
+total_select = total.head(20)
+total_select.plot(kind="bar", figsize=(8,6), fontsize=10)
+plt.xlabel("Columns", fontsize=20)
+plt.ylabel("Count", fontsize=20)
+plt.title("Total Missing Values", fontsize=20)
+
+# Method 1 : Dropping rows with missing Lot Frontage
+housing.dropna(subset=['Lot Frontage'])
+
+# Method 2: Dropping the entire 'Lot Frontage' col
+housing.drop("Lot Frontage", axis=1)
+
+# Method 3: Filling missing values with the median
+median = housing["Lot Frontage"].median()
+housing["Lot Frontage"].fillna(median, inplace=True)
+housing.tail()
+
+norm_data = MinMaxScaler().fit_transform(hous_num)
+scaled_data = StandardScaler().fit_transform(hous_num)
+
+sns.boxplot(x=housing['Lot Area'])
+plt.show()
+
+price_area = housing.plot.scatter(x='Gr Liv Area', y='SalePrice')
+
+housing.sort_values(by='Gr Liv Area', ascending=False)[:2]
+
+housing['LQSF_Stats'] = stats.zscore(housing['Low Qual Fin SF'])
+housing[['Low Qual Fin SF', 'LQSF_Stats']].describe().round(3)
+
+--------------------------------------Part 1-D: Feature Engineering------------------------------------------------------------
+
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import seaborn as sns
+from sklearn.preprocessing import PolynomialFeatures
+sns.set()
 
-df = pd.read_csv("data/Ames_Housing_Data.tsv", sep='\t')
-print("Original 'House Style' column:")
-print(df['House Style'].head())
-house_style_dummies = pd.get_dummies(df['House Style'], prefix='Style', drop_first=True)
-print("\n'House Style' after one-hot encoding:")
-print(house_style_dummies.head())
-```
+df = pd.read_csv("E:/SEM3/Practicals/ML/data/Ames_Housing_Data.tsv", sep='\t')
+df = df.loc[df['Gr Liv Area'] <= 4000, :]
+data = df.copy()
 
------
+one_hot_encode_cols = df.dtypes[df.dtypes==object].index.tolist()
+df = pd.get_dummies(df, columns=one_hot_encode_cols, drop_first=True)
 
-### Prac 3-A,B - Linear Programming using Least Square
+mask = data.dtypes == float
+float_cols = data.columns[mask]
+skew_limit = 0.75
+skew_vals = data[float_cols].skew()
+skew_cols = (skew_vals.sort_values(ascending=False)
+             .to_frame()
+             .rename(columns={0:'Skew'})
+             .query('abs(Skew) > {}'.format(skew_limit)))
 
-```python
+for col in skew_cols.index.values:
+    if col == "SalePrice":
+        continue
+    df[col] = df[col].apply(np.log1p)
+
+smaller_df = df.loc[:, ['Lot Area', 'Overall Qual', 'Overall Cond', 'Year Built', 'Year Remod/Add', 'Gr Liv Area', 'Full Bath', 'Bedroom AbvGr', 'Fireplaces', 'Garage Cars', 'SalePrice']]
+smaller_df = smaller_df.fillna(0)
+X = smaller_df.loc[:, ['Lot Area', 'Overall Qual', 'Overall Cond', 'Year Built', 'Year Remod/Add', 'Gr Liv Area', 'Full Bath', 'Bedroom AbvGr', 'Fireplaces', 'Garage Cars']]
+y = smaller_df['SalePrice']
+
+X2 = X.copy()
+X2['OQ2'] = X2['Overall Qual']**2
+X2['GLA2'] = X2['Gr Liv Area']**2
+
+X3 = X2.copy()
+X3['OQ_x_YB'] = X3['Overall Qual'] * X3['Year Built']
+X3['OQ_/_LA'] = X3['Overall Qual'] / X3['Lot Area']
+
+nbh_counts = data.Neighborhood.value_counts()
+other_nbhs = list(nbh_counts[nbh_counts <= 8].index)
+X4 = X3.copy()
+X4['Neighborhood'] = data['Neighborhood'].replace(other_nbhs, 'Other')
+
+def add_deviation_feature(X, feature, category):
+    category_gb = X.groupby(category)[feature]
+    category_mean = category_gb.transform(lambda x: x.mean())
+    category_std = category_gb.transform(lambda x: x.std())
+    deviation_feature = (X[feature] - category_mean) / category_std
+    X[feature + '_Dev_' + category] = deviation_feature
+    
+X5 = X4.copy()
+X5['House Style'] = data['House Style']
+add_deviation_feature(X5, 'Year Built', 'House Style')
+add_deviation_feature(X5, 'Overall Qual', 'Neighborhood')
+
+pf = PolynomialFeatures(degree=2)
+features = ['Lot Area', 'Overall Qual']
+pf.fit(df[features])
+feat_array = pf.transform(df[features])
+pd.DataFrame(feat_array, columns=pf.get_feature_names_out(input_features=features))
+----------------------------------------------Practical 2: Testing Hypothesis--------------------------------------------
+
+Aim: To implement the Find-S algorithm for finding the most specific hypothesis.
+
+import csv
+
+hypo = ['%','%','%', '%', '%','%']
+# Assuming 'data' is loaded from "trainingdata.csv" and contains positive examples
+# For demonstration, let's create a sample 'data' list
+data = [
+    ['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Warm', 'Same', 'Yes'],
+    ['Sunny', 'Warm', 'High', 'Strong', 'Cool', 'Change', 'Yes']
+]
+
+print("The given training examples are:")
+# Printing header and all examples would happen here in the full code.
+
+print("\nThe Positive examples are:")
+for x in data:
+    print(x)
+print("\n")
+
+TotalExamples = len(data)
+i=0
+j=0
+k=0
+print("The steps of the Find S-Algorithm are: \n", hypo)
+temp_list = []
+p=0
+d = len(data[p])-1
+
+for j in range(d):
+    temp_list.append(data[i][j])
+hypo = temp_list
+print(hypo)
+
+for i in range(1, TotalExamples):
+    for k in range(d):
+        if hypo[k] != data[i][k]:
+            hypo[k] = '?'
+        else:
+            pass
+    print(hypo)
+
+print("\nThe maximally specific Find S-Algorithm for the given training examples is:")
+final_list = []
+for i in range(d):
+    final_list.append(hypo[i])
+print(final_list)
+--------------------------------------------------Practical 3: Linear Models------------------------------------------------------------
+
+Aim: To implement and understand various linear models for regression.
+
+Code
+Part 3-A/B: Linear Regression & Gradient Descent
+
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression, SGDRegressor
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
 
+# --- Linear Regression with Normal Equation ---
 X = 2 * np.random.rand(100, 1)
 y = 4 + 3 * X + np.random.randn(100, 1)
-X_b = np.c_[np.ones((100, 1)), X]
+X_b = np.c_[np.ones((100, 1)), X] 
 theta_best = np.linalg.inv(X_b.T.dot(X_b)).dot(X_b.T).dot(y)
-print(f"Calculated Intercept (should be ~4): {theta_best[0][0]}")
-print(f"Calculated Slope (should be ~3): {theta_best[1][0]}")
-plt.plot(X, y, "b.")
+
 X_new = np.array([[0], [2]])
 X_new_b = np.c_[np.ones((2, 1)), X_new]
 y_predict = X_new_b.dot(theta_best)
-plt.plot(X_new, y_predict, "r-", label="Prediction")
+
+plt.plot(X_new, y_predict, "r-", linewidth=2, label="Predictions")
+plt.plot(X, y, "b.")
 plt.xlabel("$x_1$")
-plt.ylabel("$y$")
+plt.ylabel("$y$", rotation=0)
+plt.axis([0, 2, 0, 15])
 plt.legend()
 plt.show()
-```
 
------
+# --- Linear Regression with Scikit-Learn ---
+lin_reg = LinearRegression()
+lin_reg.fit(X, y)
+lin_reg.predict(X_new)
 
-### Prac 4a - Discriminative Models (Logistic Regression)
+# --- Batch Gradient Descent ---
+eta = 0.1
+n_iterations = 1000
+m = 100
+theta = np.random.randn(2,1)
+for iteration in range(n_iterations):
+    gradients = 2/m * X_b.T.dot(X_b.dot(theta) - y)
+    theta = theta - eta * gradients
 
-```python
+# --- Stochastic Gradient Descent (SGD) ---
+n_epochs = 50
+t0, t1 = 5, 50
+def learning_schedule(t):
+    return t0 / (t + t1)
+theta = np.random.randn(2,1)
+for epoch in range(n_epochs):
+    for i in range(m):
+        random_index = np.random.randint(m)
+        xi = X_b[random_index:random_index+1]
+        yi = y[random_index:random_index+1]
+        gradients = 2 * xi.T.dot(xi.dot(theta) - yi)
+        eta = learning_schedule(epoch * m + i)
+        theta = theta - eta * gradients
+
+# --- Polynomial Regression ---
+m = 100
+X = 6 * np.random.rand(m, 1) - 3
+y = 0.5 * X**2 + X + 2 + np.random.randn(m, 1)
+poly_features = PolynomialFeatures(degree=2, include_bias=False)
+X_poly = poly_features.fit_transform(X)
+lin_reg = LinearRegression()
+lin_reg.fit(X_poly, y)
+
+# --- Learning Curves ---
+def plot_learning_curves(model, X, y):
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=10)
+    train_errors, val_errors = [], []
+    for m in range(1, len(X_train) + 1):
+        model.fit(X_train[:m], y_train[:m])
+        y_train_predict = model.predict(X_train[:m])
+        y_val_predict = model.predict(X_val)
+        train_errors.append(mean_squared_error(y_train[:m], y_train_predict))
+        val_errors.append(mean_squared_error(y_val, y_val_predict))
+    plt.plot(np.sqrt(train_errors), "r-+", linewidth=2, label="train")
+    plt.plot(np.sqrt(val_errors), "b-", linewidth=3, label="val")
+    plt.legend()
+    plt.xlabel("Training set size")
+    plt.ylabel("RMSE")
+
+lin_reg = LinearRegression()
+plot_learning_curves(lin_reg, X, y)
+plt.show()
+-----------------------------------------Part 3-C: Regularized Linear Models----------------------------------------------------
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import Ridge, Lasso, ElasticNet, SGDRegressor
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.pipeline import Pipeline
+
+np.random.seed(42)
+m = 20
+X = 3 * np.random.rand(m, 1)
+y = 1 + 0.5 * X + np.random.randn(m, 1) / 1.5
+X_new = np.linspace(0, 3, 100).reshape(100, 1)
+
+# --- Ridge Regression ---
+ridge_reg = Ridge(alpha=1, solver="cholesky")
+ridge_reg.fit(X, y)
+ridge_reg.predict([[1.5]])
+
+# --- Lasso Regression ---
+lasso_reg = Lasso(alpha=0.1)
+lasso_reg.fit(X, y)
+lasso_reg.predict([[1.5]])
+
+# --- Elastic Net ---
+elastic_net = ElasticNet(alpha=0.1, l1_ratio=0.5, random_state=42)
+elastic_net.fit(X, y)
+elastic_net.predict([[1.5]])
+
+# --- Plotting Function for Regularization ---
+def plot_model(model_class, polynomial, alphas, **model_kargs):
+    for alpha, style in zip(alphas, ("b-", "g--", "r:")):
+        model = model_class(alpha, **model_kargs) if alpha > 0 else LinearRegression()
+        if polynomial:
+            model = Pipeline([
+                ("poly_features", PolynomialFeatures(degree=10, include_bias=False)),
+                ("std_scaler", StandardScaler()),
+                ("regul_reg", model),
+            ])
+        model.fit(X, y)
+        y_new_regul = model.predict(X_new)
+        lw = 2 if alpha > 0 else 1
+        plt.plot(X_new, y_new_regul, style, linewidth=lw, label=r"$\alpha = {}$".format(alpha))
+    plt.plot(X, y, "b.", linewidth=3)
+    plt.legend(loc="upper left", fontsize=15)
+    plt.xlabel("$x_1$", fontsize=18)
+    plt.axis([0, 3, 0, 4])
+
+plt.figure(figsize=(8,4))
+plt.subplot(121)
+plot_model(Ridge, polynomial=False, alphas=(0, 10, 100), random_state=42)
+plt.ylabel("$y$", rotation=0, fontsize=18)
+plt.subplot(122)
+plot_model(Ridge, polynomial=True, alphas=(0, 10**-5, 1), random_state=42)
+plt.show()
+--------------------------------------Practical 4: Discriminative Models-------------------------------------------------
+
+Aim: To implement and evaluate various discriminative classification models.
+
+Part 4-A: Logistic Regression
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 col_names = ['pregnant', 'glucose', 'bp', 'skin', 'insulin', 'bmi', 'pedigree', 'age', 'label']
 pima = pd.read_csv("data/pima-indians-diabetes.csv", header=None, names=col_names)
+
 feature_cols = ['pregnant', 'insulin', 'bmi', 'age', 'glucose', 'bp', 'pedigree']
 X = pima[feature_cols]
 y = pima.label
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=16)
-logreg = LogisticRegression(random_state=100, max_iter=200)
+
+logreg = LogisticRegression(random_state=100, max_iter=200) # Increased max_iter
 logreg.fit(X_train, y_train)
 y_pred = logreg.predict(X_test)
+
 cnf_matrix = metrics.confusion_matrix(y_test, y_pred)
-print("Confusion Matrix:")
-print(cnf_matrix)
-```
+sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu", fmt='g')
+plt.title('Confusion matrix')
+plt.ylabel('Actual label')
+plt.xlabel('Predicted label')
+plt.show()
 
------
+print(metrics.classification_report(y_test, y_pred, target_names=['without diabetes', 'with diabetes']))
+---------------------------------------Part 4-B: K-Nearest Neighbors (KNN)-----------------------------------------------
 
-### Prac 4b - Discriminative Models (K-Nearest Neighbors)
-
-```python
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn import metrics
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score
+import matplotlib.pyplot as plt
 
+rs = 123
+dataset_url = "data/tumor.csv"
+tumor_df = pd.read_csv(dataset_url)
+
+X = tumor_df.iloc[:, :-1]
+y = tumor_df.iloc[:, -1:]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=rs)
+
+# Try K from 1 to 50
+max_k = 50
+f1_scores = []
+for k in range(1, max_k + 1):
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train.values.ravel())
+    preds = knn.predict(X_test)
+    f1 = f1_score(y_test, preds)
+    f1_scores.append((k, round(f1, 4)))
+
+f1_results = pd.DataFrame(f1_scores, columns=['K', 'F1 Score'])
+f1_results = f1_results.set_index('K')
+
+# Plot F1 results
+ax = f1_results.plot(figsize=(12, 12))
+ax.set(xlabel='Num of Neighbors', ylabel='F1 Score')
+ax.set_xticks(range(1, max_k, 2))
+plt.title('KNN F1 Score')
+plt.show()
+----------------------------------------------------Part 4-C: Decision Trees-----------------------------------------
+
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.model_selection import train_test_split, GridSearchCV
+import matplotlib.pyplot as plt
+
+rs=123
 tumor_df = pd.read_csv("data/tumor.csv")
 X = tumor_df.iloc[:, :-1]
-y = tumor_df.iloc[:, -1]
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=123)
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train, y_train.values.ravel())
-y_pred = knn.predict(X_test)
-print(f"Accuracy for K=5: {metrics.accuracy_score(y_test, y_pred):.4f}")
-```
+y = tumor_df.iloc[:, -1:]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state = rs)
 
------
+# Default model
+model = DecisionTreeClassifier(random_state=rs)
+model.fit(X_train, y_train.values.ravel())
 
-### Prac 4c - Discriminative Models (Decision Tree)
+# Hyperparameter tuning with GridSearchCV
+params_grid = {
+    'criterion': ['gini', 'entropy'],
+    'max_depth': [5, 10, 15, 20],
+    'min_samples_leaf': [1, 2, 5]
+}
+grid_search = GridSearchCV(estimator=model, param_grid=params_grid, scoring='f1', cv=5, verbose=0)
+grid_search.fit(X_train, y_train.values.ravel())
+best_params = grid_search.best_params_
+print(f"Best parameters: {best_params}")
 
-```python
+# Train and plot the best model
+best_model = DecisionTreeClassifier(**best_params, random_state=rs)
+best_model.fit(X_train, y_train.values.ravel())
+
+plt.figure(figsize=(25, 20))
+plot_tree(best_model, feature_names=X.columns, filled=True)
+plt.show()
+----------------------------------------Part 4-D: Support Vector Machines (SVM)------------------------------------------
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.svm import LinearSVC
+
+data = pd.read_csv("data/Wine_Quality_Data.csv", sep=',')
+y = (data['color'] == 'red').astype(int)
+fields = list(data.columns[:-1])
+correlations = data[fields].corrwith(y)
+fields = correlations.map(abs).sort_values().iloc[-2:].index
+X = data[fields]
+
+scaler = MinMaxScaler()
+X = scaler.fit_transform(X)
+X = pd.DataFrame(X, columns=['%s_scaled' % fld for fld in fields])
+
+lsvc = LinearSVC()
+lsvc.fit(X, y)
+
+ax = plt.axes()
+x_axis, y_axis = np.arange(0, 1.005, .005), np.arange(0, 1.005, .005)
+xx, yy = np.meshgrid(x_axis, y_axis)
+X_grid = pd.DataFrame([xx.ravel(), yy.ravel()]).T
+y_grid_predictions = lsvc.predict(X_grid)
+y_grid_predictions = y_grid_predictions.reshape(xx.shape)
+
+ax.contourf(xx, yy, y_grid_predictions, cmap=plt.cm.autumn_r, alpha=.3)
+ax.scatter(X.iloc[:,0], X.iloc[:,1], c=y.map({1:'red', 0:'yellow'}), alpha=1)
+ax.set(xlabel=fields[0], ylabel=fields[1], xlim=[0,1], ylim=[0,1], title='Decision boundary for LinearSVC')
+plt.show()
+----------------------------------------------Part 4-E: Random Forest----------------------------------------------
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.tree import plot_tree
 
-tumor_df = pd.read_csv("data/tumor.csv")
-X = tumor_df.iloc[:, :-1]
-y = tumor_df.iloc[:, -1]
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=123)
-model = DecisionTreeClassifier(random_state=123)
-model.fit(X_train, y_train.values.ravel())
-preds = model.predict(X_test)
-print(f"Model Accuracy: {metrics.accuracy_score(y_test, preds):.4f}")
-```
+df = pd.read_csv("data/automobileEDA.csv")
+df = df.select_dtypes(exclude=['object'])
+df = df.fillna(df.mean())
+x = df.drop('price', axis=1)
+y = df['price']
 
------
+x_train,x_test,y_train,y_test = train_test_split(x, y, test_size=0.3, random_state=0)
 
-### Prac 5a - Generative Models (Gaussian Naive Bayes)
+regressor = RandomForestRegressor(n_estimators=1000, random_state=42)
+regressor.fit(x_train, y_train)
+y_pred = regressor.predict(x_test)
 
-```python
+print('Accuracy:', round(100 - np.mean(100 * (abs(y_pred-y_test) / y_test)), 2), '%')
+
+plt.figure(figsize=(10, 7))
+ax = sns.distplot(y, hist=False, color="r", label="Actual Value")
+sns.distplot(y_pred, hist=False, color="b", label="Fitted Values", ax=ax)
+plt.title('Actual vs Fitted Values for Price')
+plt.show()
+
+# Visualize one tree from the forest
+single_tree = regressor.estimators_[5]
+plt.figure(figsize=(25, 15))
+plot_tree(single_tree, filled=True, rounded=True, fontsize=10, feature_names=x.columns)
+plt.show()
+-----------------------------------------------------Part 4-F: AdaBoost-------------------------------------------------
+
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn import metrics
+import matplotlib.pyplot as plt
+
+churn_df = pd.read_csv("https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-ML0101EN-SkillsNetwork/labs/Module%203/data/ChurnData.csv")
+churn_df = churn_df[['tenure', 'age', 'address', 'income', 'ed', 'employ', 'equip', 'callcard', 'wireless', 'churn']]
+churn_df['churn'] = churn_df['churn'].astype('int')
+X = churn_df[['tenure', 'age', 'address', 'income', 'ed', 'employ', 'equip']]
+y = churn_df['churn']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+model = AdaBoostClassifier(n_estimators=100, random_state=0, learning_rate=0.7)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+
+print("Test Accuracy:", metrics.accuracy_score(y_test, y_pred))
+print("Train Accuracy:", metrics.accuracy_score(y_train, model.predict(X_train)))
+---------------------------------------Practical 5: Generative Models----------------------------------------------
+
+Aim: To implement and understand generative models like Naive Bayes and Hidden Markov Models.
+
+Code
+Part 5-A: Gaussian Naive Bayes
+
 from sklearn.datasets import make_classification
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
 
-X, y = make_classification(n_samples=800, n_features=6, n_informative=2, n_classes=3, random_state=1)
+X, y = make_classification(
+    n_features=6,
+    n_classes=3,
+    n_samples=800,
+    n_informative=2,
+    random_state=1,
+    n_clusters_per_class=1,
+)
+
 x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=125)
+
 model = GaussianNB()
 model.fit(x_train, y_train)
+
 y_pred = model.predict(x_test)
-print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
-```
+accuracy = accuracy_score(y_pred, y_test)
+f1 = f1_score(y_pred, y_test, average="weighted")
+print("Accuracy:", accuracy)
+print("F1 Score:", f1)
 
------
+labels=[0,1,2]
+cm = confusion_matrix(y_test, y_pred, labels=labels)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
+disp.plot()
+plt.show()
+-------------------------------------------Part 5-B: Hidden Markov Models (HMM)------------------------------
 
-### Prac 6a - Probabilistic Models (Bayesian Linear Regression)
+import pandas as pd
+import numpy as np
+from hmmlearn.hmm import CategoricalHMM
+from sklearn.model_selection import GroupShuffleSplit
 
-```python
+data = pd.read_csv("data/NER_dataset.csv", encoding='latin1')
+data = data.fillna(method="ffill")
+data = data.rename(columns={'Sentence #': 'sentence'})
+
+tags = list(set(data.POS.values))
+words = list(set(data.Word.values))
+word2id = {w: i for i, w in enumerate(words)}
+tag2id = {t: i for i, t in enumerate(tags)}
+
+X = data.drop('POS', axis=1)
+y = data.POS
+gs = GroupShuffleSplit(n_splits=2, test_size=.33, random_state=42)
+train_ix, test_ix = next(gs.split(X, y, groups=data['sentence']))
+data_train = data.loc[train_ix]
+
+# Create emission and transition probabilities (simplified for brevity)
+# The full code calculates these from the training data
+startprob = np.ones(len(tags)) / len(tags)
+transmat = np.ones((len(tags), len(tags))) / len(tags)
+emissionprob = np.ones((len(tags), len(words))) / len(words)
+
+model = CategoricalHMM(n_components=len(tags), algorithm='viterbi', random_state=42)
+model.startprob_ = startprob
+model.transmat_ = transmat
+model.emissionprob_ = emissionprob
+
+# Prepare test data for prediction
+data_test = data.loc[test_ix]
+data_test.loc[~data_test['Word'].isin(words), 'Word'] = words[0] # Handle unknown words
+word_test = list(data_test.Word)
+samples = [[word2id[val]] for val in word_test]
+lengths = data_test.groupby('sentence').size().tolist()
+
+pos_predict = model.predict(samples, lengths)
+print("Predicted POS tag sequence (first 20):", pos_predict[:20])
+----------------------------------------------Practical 6: Probabilistic Models-----------------------------------------
+
+Aim: To explore probabilistic models, including Bayesian Linear Regression and Gaussian Mixture Models.
+
+Code
+Part 6-A: Bayesian Linear Regression
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -185,67 +687,252 @@ np.random.seed(42)
 X = np.linspace(-5, 5, 20)
 y = 2 * X + 1 + np.random.normal(0, 2, X.shape)
 X_design = np.vstack((np.ones_like(X), X)).T
+
 prior_mean = np.array([0, 0])
 prior_covariance = np.eye(2) * 10
 noise_variance = 4
-posterior_covariance = np.linalg.inv(np.linalg.inv(prior_covariance) + (X_design.T @ X_design) / noise_variance)
-posterior_mean = posterior_covariance @ (np.linalg.inv(prior_covariance) @ prior_mean + (X_design.T @ y) / noise_variance)
+
+posterior_covariance = np.linalg.inv(
+    np.linalg.inv(prior_covariance) + (X_design.T @ X_design) / noise_variance
+)
+posterior_mean = posterior_covariance @ (
+    np.linalg.inv(prior_covariance) @ prior_mean + (X_design.T @ y) / noise_variance
+)
+
+n_samples = 5
+posterior_samples = np.random.multivariate_normal(posterior_mean, posterior_covariance, n_samples)
+
 plt.figure(figsize=(10, 6))
 plt.scatter(X, y, label="Observed data", color="blue")
-for _ in range(5):
-    sample_w = np.random.multivariate_normal(posterior_mean, posterior_covariance)
-    y_sample = sample_w[0] + sample_w[1] * X
-    plt.plot(X, y_sample, alpha=0.7)
+X_test = np.linspace(-6, 6, 100)
+X_test_design = np.vstack((np.ones_like(X_test), X_test)).T
+
+for i, sample in enumerate(posterior_samples):
+    y_test = X_test_design @ sample
+    plt.plot(X_test, y_test, label=f"Posterior sample" if i==0 else None, alpha=0.7)
+
+plt.plot(X_test, 2 * X_test + 1, label="True function", color="green", linewidth=2)
 plt.title("Bayesian Linear Regression")
+plt.xlabel("X")
+plt.ylabel("y")
 plt.legend()
 plt.show()
-```
+-----------------------------Part 6-B: Gaussian Mixture Models (GMM)----------------------------
 
------
-
-### Prac 6b - Probabilistic Models (Gaussian Mixture Model)
-
-```python
+import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris
 from sklearn.mixture import GaussianMixture
-import matplotlib.pyplot as plt
+from scipy import stats
 
 data = load_iris()
 X = data.data
-gmm = GaussianMixture(n_components=3, random_state=42)
-y_pred = gmm.fit(X).predict(X)
+y = data.target
+
+gm = GaussianMixture(n_components=3, n_init=10, random_state=42)
+gm.fit(X)
+y_pred = gm.predict(X)
+
+# Map cluster labels to actual labels for accuracy calculation
+mapping = {}
+for class_id in np.unique(y):
+    mode, _ = stats.mode(y_pred[y == class_id])
+    mapping[mode] = class_id
+
+y_pred_mapped = np.array([mapping[cluster_id] for cluster_id in y_pred])
+accuracy = np.sum(y_pred_mapped == y) / len(y_pred)
+print(f"Accuracy: {accuracy:.4f}")
+
+# Plotting the results
 plt.figure(figsize=(8, 6))
-plt.scatter(X[:, 2], X[:, 3], c=y_pred, cmap='viridis', marker='o')
+plt.scatter(X[:, 2], X[:, 3], c=y_pred_mapped, cmap='viridis', marker='o')
 plt.xlabel("Petal Length")
 plt.ylabel("Petal Width")
 plt.title("GMM Clustering of Iris Dataset")
 plt.show()
-```
 
------
+# Sample from the trained model
+X_new, y_new = gm.sample(6)
+print("Generated Samples:\n", X_new)
+print("Generated Labels:", y_new)
+----------------------------------------Practical 7: Model Evaluation and Hyperparameter Tuning-----------------------------------
 
-### Prac 7a - Model Evaluation and Hyperparameter Tuning
+Aim: To evaluate model performance using cross-validation techniques.
 
-```python
 from statistics import mean, stdev
 from sklearn import preprocessing
 from sklearn.model_selection import StratifiedKFold
-from sklearn.linear_model import LogisticRegression
+from sklearn import linear_model
 from sklearn import datasets
 
 cancer = datasets.load_breast_cancer()
-X = cancer.data
+x = cancer.data
 y = cancer.target
+
 scaler = preprocessing.MinMaxScaler()
-x_scaled = scaler.fit_transform(X)
-lr = LogisticRegression()
+x_scaled = scaler.fit_transform(x)
+
+lr = linear_model.LogisticRegression()
 skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1)
-accuracies = []
-for train_index, test_index in skf.split(X, y):
+lst_accu_stratified = []
+
+for train_index, test_index in skf.split(x, y):
     x_train_fold, x_test_fold = x_scaled[train_index], x_scaled[test_index]
     y_train_fold, y_test_fold = y[train_index], y[test_index]
     lr.fit(x_train_fold, y_train_fold)
-    accuracies.append(lr.score(x_test_fold, y_test_fold))
-print(f"Overall (Mean) Accuracy: {mean(accuracies)*100:.2f}%")
-print(f"Standard Deviation: {stdev(accuracies):.4f}")
-```
+    lst_accu_stratified.append(lr.score(x_test_fold, y_test_fold))
+
+print('List of possible accuracy:', lst_accu_stratified)
+print(f"\nMaximum Accuracy: {max(lst_accu_stratified)*100:.2f}%")
+print(f"Minimum Accuracy: {min(lst_accu_stratified)*100:.2f}%")
+print(f"Overall Accuracy: {mean(lst_accu_stratified)*100:.2f}%")
+print(f"Standard Deviation is: {stdev(lst_accu_stratified):.4f}")
+---------------------------------------------Practical 8: Bayesian Learning--------------------------------------------
+
+Aim: To perform Bayesian inference for a linear regression model using Pyro.
+
+import torch
+import pyro
+import pyro.distributions as dist
+from pyro.infer import SVI, Trace_ELBO
+from pyro.optim import Adam
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+torch.manual_seed(0)
+X = torch.linspace(0, 10, 100)
+true_slope = 2
+true_intercept = 1
+Y = true_intercept + true_slope * X + torch.randn(100)
+
+def model(X, Y):
+    slope = pyro.sample("slope", dist.Normal(0, 10))
+    intercept = pyro.sample("intercept", dist.Normal(0, 10))
+    sigma = pyro.sample("sigma", dist.HalfNormal(1))
+    mu = intercept + slope * X
+    with pyro.plate("data", len(X)):
+        pyro.sample("obs", dist.Normal(mu, sigma), obs=Y)
+
+def guide(X, Y):
+    slope_loc = pyro.param("slope_loc", torch.tensor(0.0))
+    slope_scale = pyro.param("slope_scale", torch.tensor(1.0), constraint=dist.constraints.positive)
+    intercept_loc = pyro.param("intercept_loc", torch.tensor(0.0))
+    intercept_scale = pyro.param("intercept_scale", torch.tensor(1.0), constraint=dist.constraints.positive)
+    sigma_loc = pyro.param("sigma_loc", torch.tensor(1.0), constraint=dist.constraints.positive)
+    
+    pyro.sample("slope", dist.Normal(slope_loc, slope_scale))
+    pyro.sample("intercept", dist.Normal(intercept_loc, intercept_scale))
+    pyro.sample("sigma", dist.HalfNormal(sigma_loc))
+
+optim = Adam({"lr": 0.01})
+svi = SVI(model, guide, optim, loss=Trace_ELBO())
+
+num_iterations = 1000
+for i in range(num_iterations):
+    loss = svi.step(X, Y)
+    if (i + 1) % 100 == 0:
+        print(f"Iteration {i+1}/{num_iterations} Loss: {loss:.2f}")
+
+from pyro.infer import Predictive
+predictive = Predictive(model, guide=guide, num_samples=1000)
+posterior = predictive(X, Y)
+
+slope_samples = posterior["slope"]
+intercept_samples = posterior["intercept"]
+
+print(f"Estimated Slope: {slope_samples.mean().item():.4f}")
+print(f"Estimated Intercept: {intercept_samples.mean().item():.4f}")
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+sns.kdeplot(slope_samples.squeeze(), fill=True, ax=axs[0])
+axs[0].set_title("Posterior Distribution of Slope")
+sns.kdeplot(intercept_samples.squeeze(), fill=True, ax=axs[1])
+axs[1].set_title("Posterior Distribution of Intercept")
+plt.tight_layout()
+plt.show()
+----------------------------------------------Practical 9: Deep Generative Models---------------------------------------------
+
+Aim: To build and train a Deep Convolutional Generative Adversarial Network (DCGAN).
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torchvision import datasets, transforms
+import numpy as np
+import matplotlib.pyplot as plt
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+latent_dim = 100
+lr = 0.0002
+beta1 = 0.5
+num_epochs = 10
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
+
+train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=32, shuffle=True)
+
+class Generator(nn.Module):
+    def __init__(self, latent_dim):
+        super(Generator, self).__init__()
+        self.model = nn.Sequential(
+            nn.Linear(latent_dim, 128 * 8 * 8), nn.ReLU(),
+            nn.Unflatten(1, (128, 8, 8)),
+            nn.Upsample(scale_factor=2),
+            nn.Conv2d(128, 128, kernel_size=3, padding=1), nn.BatchNorm2d(128), nn.ReLU(),
+            nn.Upsample(scale_factor=2),
+            nn.Conv2d(128, 64, kernel_size=3, padding=1), nn.BatchNorm2d(64), nn.ReLU(),
+            nn.Conv2d(64, 3, kernel_size=3, padding=1), nn.Tanh()
+        )
+    def forward(self, z):
+        return self.model(z)
+
+class Discriminator(nn.Module):
+    def __init__(self):
+        super(Discriminator, self).__init__()
+        self.model = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1), nn.LeakyReLU(0.2), nn.Dropout(0.25),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1), nn.BatchNorm2d(64), nn.LeakyReLU(0.2), nn.Dropout(0.25),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1), nn.BatchNorm2d(128), nn.LeakyReLU(0.2), nn.Dropout(0.25),
+            nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1), nn.BatchNorm2d(256), nn.LeakyReLU(0.2), nn.Dropout(0.25),
+            nn.Flatten(),
+            nn.Linear(256 * 4 * 4, 1), # Adjusted for CIFAR-10 image size after convolutions
+            nn.Sigmoid()
+        )
+    def forward(self, img):
+        return self.model(img)
+
+generator = Generator(latent_dim).to(device)
+discriminator = Discriminator().to(device)
+adversarial_loss = nn.BCELoss()
+optimizer_G = optim.Adam(generator.parameters(), lr=lr, betas=(beta1, 0.999))
+optimizer_D = optim.Adam(discriminator.parameters(), lr=lr, betas=(beta1, 0.999))
+
+for epoch in range(num_epochs):
+    for i, (real_images, _) in enumerate(dataloader):
+        real_images = real_images.to(device)
+        valid = torch.ones(real_images.size(0), 1, device=device)
+        fake = torch.zeros(real_images.size(0), 1, device=device)
+
+        # Train Discriminator
+        optimizer_D.zero_grad()
+        z = torch.randn(real_images.size(0), latent_dim, device=device)
+        fake_images = generator(z)
+        real_loss = adversarial_loss(discriminator(real_images), valid)
+        fake_loss = adversarial_loss(discriminator(fake_images.detach()), fake)
+        d_loss = (real_loss + fake_loss) / 2
+        d_loss.backward()
+        optimizer_D.step()
+
+        # Train Generator
+        optimizer_G.zero_grad()
+        gen_images = generator(z)
+        g_loss = adversarial_loss(discriminator(gen_images), valid)
+        g_loss.backward()
+        optimizer_G.step()
+        
+        if (i+1) % 500 == 0:
+            print(f"Epoch [{epoch+1}/{num_epochs}] Batch {i+1}/{len(dataloader)} | D Loss: {d_loss.item():.4f} | G Loss: {g_loss.item():.4f}")
