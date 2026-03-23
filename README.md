@@ -1,407 +1,585 @@
-—------------Practical 1 Blockchain—-----------------------------------------------
-import hashlib
-import time
-import json
-
-# ==========================================
-# PART 1: THE BLUEPRINTS (CLASS DEFINITIONS)
-# ==========================================
-
-class Block:
-    def __init__(self, index, previous_hash, timestamp, data, nonce=0):
-        self.index = index
-        self.previous_hash = previous_hash
-        self.timestamp = timestamp
-        self.data = data
-        self.nonce = nonce
-        self.hash = self.calculate_hash()
-
-    def calculate_hash(self):
-        block_string = f"{self.index}{self.previous_hash}{self.timestamp}{json.dumps(self.data)}{self.nonce}"
-        return hashlib.sha256(block_string.encode()).hexdigest()
-
-class Blockchain:
-    def __init__(self):
-        self.chain = [self.create_genesis_block()]
-        self.difficulty = 4
-
-    def create_genesis_block(self):
-        return Block(0, "0", time.time(), "Genesis Block")
-
-    def get_latest_block(self):
-        return self.chain[-1]
-
-    def mine_block(self, data):
-        previous_block = self.get_latest_block()
-        index = previous_block.index + 1
-        timestamp = time.time()
-        nonce = 0
-        
-        new_block = Block(index, previous_block.hash, timestamp, data, nonce)
-        
-        # The Mining Loop
-        while not new_block.hash.startswith('0' * self.difficulty):
-            new_block.nonce += 1
-            new_block.hash = new_block.calculate_hash()
-            
-        self.chain.append(new_block)
-
-    def dump_chain(self):
-        print("\n--- Blockchain Ledger ---")
-        for block in self.chain:
-            print(f"Index: {block.index} | PrevHash: {block.previous_hash[:10]}... | Hash: {block.hash[:10]}... | Data: {block.data}")
-
-# ==========================================
-# PART 2: THE EXECUTION (RUNNING THE CODE)
-# ==========================================
-
-# 1. Turn on the factory
-my_blockchain = Blockchain()
-
-# 2. Feed it data
-my_blockchain.mine_block({"sender": "Alice", "receiver": "Bob", "amount": 50})
-my_blockchain.mine_block({"sender": "Bob", "receiver": "Charlie", "amount": 25})
-
-# 3. Print the result
-my_blockchain.dump_chain()
-
-
-
-—------------Practical 2 (Practical 2A: "Write a Solidity program to create a smart contract that stores and retrieves a state variable."
-Practical 2B: "Write a Solidity program to implement a counter that increments and decrements a value."
-Practical 2C: "Write a Solidity program to create a basic calculator that performs addition, subtraction, multiplication, division, and modulo operations."
-Practical 6: "Write a Solidity program to demonstrate the distinct behavior of the view and pure function modifiers."
-)—----------
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
-
-contract UniversalCalc { 
-    uint256 public num;
-
-    function store(uint256 input) public {                              //2AStorage 
-        num = input; 
-    }
-
-
-
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
-
-contract UniversalCalc { 
-    uint256 public num;                                            // 2A: Store a State Variable
-    function store(uint256 input) public {                              
-        num = input; 
-    }
-
-    function inc() public {                                    // 2B: Increment & Decrement Counter
-        num++; 
-    }
-    function dec() public { 
-        if (num >= 1) {
-            num--; 
-        }
-    }
-
-    function calc(uint256 a, uint256 b) public pure returns (            // 2C: Basic Calculator
-        uint256 add, uint256 sub, uint256 mul, uint256 div, uint256 mod
-    ) {
-        add = a + b;
-        sub = a >= b ? a - b : 0; 
-        mul = a * b;
-        if (b > 0) {
-            div = a / b;
-            mod = a % b;
-        } else {
-            div = 0;
-            mod = 0;
-        }
-    }
-
-    function retrieve() public view returns (uint256) {               // 6: View and Pure Functions
-        return num;	                                                                //(Note: retrieve() also completes Prac 2A)
-    }
-    function display() public pure returns (string memory) {
-        return "Practical performed by Suyog Shah Sathaye - 4";
-    }
-}
-
-
-
-—------Practical 7// SPDX-License-Identifier: GPL-3.0—-----------------------------------------------
-pragma solidity >=0.5.0 <0.9.0;
-
-contract ClassAlloc {
-    
-    struct Student { string n; uint r; string c; }
-    
-    Student[30] public stds;
-    uint public cnt; // Defaults to 0 automatically
-
-    function display() public pure returns (string memory) {
-        return "Practical performed by Suyog Shah Sathaye - 4";
-    }
-
-    function add(string memory _n, uint _r, string memory _c) public {
-        require(cnt < 30, "Full");
-        stds[cnt++] = Student(_n, _r, _c); // Saves the student AND adds 1 to cnt in one move
-    }
-
-    function alloc(uint r) public pure returns (string memory) {
-        require(r > 0 && r <= 30, "Invalid");
-        
-        // The Waterfall Logic
-        if (r <= 5) return "Class 45";
-        if (r <= 10) return "Class 46";
-        if (r <= 15) return "Class 47";
-        if (r <= 20) return "Class 48";
-        return "Class 49"; // Catches everything else (21-30)
-    }
-}
-
-—--(Practical 3A: "Write a Solidity program to demonstrate Logical Operators: AND (&&), OR (||), and NOT (!)."
-Practical 3B: "Write a Solidity program to demonstrate Assignment Operators: +=, -=, *=, and /=."
-Practical 3C: "Write a Solidity program to demonstrate Bitwise Operators: AND (&), OR (|), XOR (^), NOT (~), Left Shift (<<), and Right Shift (>>)."
-Practical 3D: "Write a Solidity program to demonstrate the Ternary Operator (condition ? true : false) for inline conditional logic."
-Practical 3E: "Write a Solidity program to demonstrate Comparison Operators: equal (==), greater than or equal (>=), and less than or equal (<=)."
-)--------------------------------
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
-
-contract Practical3_Operators {                               //3A: ASSIGNMENT OPERATORS\\
-    uint256 public num;                                       // 3A: Storage Variable
-    function setnum(uint256 _n) public {                      // 3A: Initialize Number
-        num = _n; 
-    }
-    function addAssign(uint256 _n) public { num += _n; }      // 3A: Add and Assign (num = num + _n)
-    function subAssign(uint256 _n) public { num -= _n; }      // 3A: Subtract and Assign
-    function mulAssign(uint256 _n) public { num *= _n; }      // 3A: Multiply and Assign
-    function divAssign(uint256 _n) public { num /= _n; }      // 3A: Divide and Assign
-
-    uint256 public val1;                                   // 3B: BITWISE & TERNARY OPERATORS\\     
-    uint256 public val2;                                      // 3B: Storage Variables
-    
-    function store(uint256 _v1) public { val1 = _v1; }        // 3B: Store Inputs
-    function store1(uint256 _v2) public { val2 = _v2; }
-
-    function bitwiseAnd() public view returns (uint256) { return val1 & val2; }   // 3B: Bitwise AND
-    function bitwiseOr() public view returns (uint256) { return val1 | val2; }   // 3B: Bitwise OR
-    function bitwiseXor() public view returns (uint256) { return val1 ^ val2; }  // 3B: Bitwise XOR
-    function leftShift() public view returns (uint256) { return val1 << 1; }     // 3B: Left Shift
-    function rightShift() public view returns (uint256) { return val1 >> 1; }    // 3B: Right Shift
-    function Ternary() public view returns (string memory) {                     // 3B: Ternary Operator
-        return (val1 > val2) ? "Val1 is Greater" : "Val2 is Greater/Equal";
-    }
-
-    uint256 public num1;                                     // 3C & 3D: COMPARISON OPERATORS\\
-    uint256 public num2;                                      // 3C: Storage Variables
-    
-    function setnum1(uint256 _n1) public { num1 = _n1; }      // 3C: Store Inputs
-    function setnum2(uint256 _n2) public { num2 = _n2; }
-
-    // 'bool' means it returns True or False
-    function isEqual() public view returns (bool) {           // 3C: Is Equal To
-        return num1 == num2; 
-    }
-    function isGreaterOrEqual() public view returns (bool) { return num1 >= num2; } // 3D: Greater/Equal
-    function isLessOrEqual() public view returns (bool) { return num1 <= num2; }    // 3D: Less/Equal
-
-    function display() public pure returns (string memory) {                       
-        return "Practical performed by Suyog Shah Sathaye - 4";
-    }
-}
-—-----Practical 4: Function Overloading:  Mathematical Functions and Functions Overloading. Strategy: The easiest practical. You just write the same function name (sum or diff) but change the number of inputs.
-—------------------
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
-
-contract Practical4_Overloading {                            // STATE VARIABLES (Blue View Buttons)\\
-    uint256 public sumResult;                                 // Stores Addition
-    uint256 public diffResult;                                // Stores Subtraction
-    uint256 public proResult;                                 // Stores Multiplication
-    uint256 public andResult;                                 // Stores Bitwise AND
-    uint256 public orResult;                                  // Stores Bitwise OR
-
-                                                        
-    // 1. Arithmetical Overloading\\
-    function sum(uint256 a, uint256 b) public { sumResult = a + b; }
-    function sum(uint256 a, uint256 b, uint256 c) public { sumResult = a + b + c; }
-
-    function diff(uint256 a, uint256 b) public { differenceResult = a - b; }
-    function diff(uint256 a, uint256 b, uint256 c) public { differenceResult = a - b - c; }
-
-    function pro(uint256 a, uint256 b) public { productResult = a * b; }
-    function pro(uint256 a, uint256 b, uint256 c) public { productResult = a * b * c; }
-
-    // 2. Bitwise Overloading\\
-    function andRes(uint256 a, uint256 b) public { bitwiseAndResult = a & b; }
-    function andRes(uint256 a, uint256 b, uint256 c) public { bitwiseAndResult = a & b & c; }
-
-    function orRes(uint256 a, uint256 b) public { bitwiseOrResult = a | b; }
-    function orRes(uint256 a, uint256 b, uint256 c) public { bitwiseOrResult = a | b | c; }
-
-    // Required Display Function\\
-    function display() public pure returns(string memory) { 
-        return "Practical performed by Suyog Shah Sathaye - 4"; 
-    }
-}
-
-
-—-----------prac 9 : Ternary & Type Casting  "To demonstrate inline conditional logic using the Ternary Operator, and to prevent an EVM Overflow crash by utilizing Type Casting (int256) to safely handle the massive integer values generated by the Bitwise NOT (~) operator." —-------------------------------
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
-
-contract TemperatureSensor { uint256 t1; uint256 t2;}                                           // 1. STATE VARIABLES (The Vault)
-
-function recordTemps(uint256 _in1, uint256 _in2) public {              // 2. THE WRITE FUNCTION
-t1 = _in1;
- 	t2 = _in2;
- }
-
-function getHottest() public view returns (uint256) {			
-return t1 > t2 ? t1 : t2;                                          // Reads as: Is t1 greater than t2? If YES, return t1. If NO, return 12
-   		 }
-
-function calculateInvertedDifference() public view returns (int256) {           // 4. TYPE CASTING & BITWISE NOT PRACTICE
-uint256 hottest = t1 > t2 ? t1 : t2;                                        // First, we find the hottest and coldest using Ternary logic
-uint256 coldest = t1 > t2 ? t2 : t1;                         // The Defusal: We cast to int256 so the ~hottest doesn't crash the EVM
- return int256(coldest) * int256(~hottest);
- }
-}
-
-—------ prac 10: Write a solidity program to find modulus of Addition of two numbers with DD and modulus of multiplication of two numbers with MM where the two numbers are achieved by performing AND operation of DD and MM (from your Date of Birth) and OR operation of YY and YY (from your Year of Birth).—----------------------------
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
-
-contract Practical10 {                                       // STATE VARIABLES (Blue Buttons) \\
-    uint256 public DD; 
-    uint256 public MM;
-    uint256 public YY1; 
-    uint256 public YY2;
-    uint256 public a1; 
-    uint256 public a2;
-
-    function storeDD(uint256 num) public { DD = num; }    		   // STORE DOB (Orange Buttons) \\
-    function storeMM(uint256 num) public { MM = num; }
-    function storeYY1(uint256 num) public { YY1 = num; }
-    function storeYY2(uint256 num) public { YY2 = num; }
-
-    function store1() public { a1 = DD & MM; }           		     // INTERMEDIATE BITWISE MATH \\
-    function store2() public { a2 = YY1 | YY2; }           		  // (Calculates a1 and a2) \\
-
-    function add_mod() public view returns (uint256) {      		 // FINAL OUTPUT (Blue Buttons) \\
-        return addmod(a1, a2, DD);                                    		    // Formula: (a1 + a2) % DD
-    }
-    function mul_mod() public view returns (uint256) {  
-        return mulmod(a1, a2, MM);                                           	       // Formula: (a1 * a2) % MM
-    }
-
-    function display() public pure returns(string memory) {        	        // IDENTITY OVERRIDE \\
-        return "Practical performed by Suyog Shah Sathaye - 4";
-    }
-}
-
-
-
-
-
-
-
-
-
-—----prac 5  Control Flow (Loops)  . Exact Aim: "To implement control flow in Solidity using for and while loops to iterate through array data, and to execute overflow-proof mathematical operations using the native addmod and mulmod functions."
-—-------------
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
-
-contract Loops {
-    uint256 public addmod1;
-    uint256 public mulmod1;
-
-    function calculate(uint256[] memory nums) public {
-        // Updated to >= 6 so it won't crash if you add an extra number
-        require(nums.length >= 6, "Need at least 6 numbers"); 
-        
-        uint256 n1; uint256 n2; uint256 n3;
-        // FOR loop compressed
-        for(uint256 i=0; i<3; i++) { if(i==0) n1=nums[i]; else if(i==1) n2=nums[i]; else n3=nums[i]; }
-        addmod1 = addmod(n1, n2, n3); 
-
-        uint256 n4; uint256 n5; uint256 n6; uint256 j=3;
-        // WHILE loop compressed
-        while(j<6) { if(j==3) n4=nums[j]; else if(j==4) n5=nums[j]; else n6=nums[j]; j++; }
-        mulmod1 = mulmod(n4, n5, n6);
-    }
-
-    function display() public pure returns(string memory) { 
-        return "Practical performed by Suyog Shah Sathaye - 4"; 
-    }
-}
-
-
-—Prac 8:  Even/Odd, Prime, and Bitwise  8: Applied Algorithmic Logic.. Exact Aim: "To design a multi-step smart contract that integrates algorithmic loops (Prime and Even/Odd validation) with Bitwise math, demonstrating advanced state-tracking and conditional execution in the Ethereum Virtual Machine."
-—---------------------
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
-
-contract Practical8 {
-    uint256 num1; uint256 num2; 
-    uint256 product; uint256 andRes; uint256 orRes;
-
-    function store(uint256 num) public { num1 = num; }
-    function store1(uint256 num) public { num2 = num; }
-
-    function oddeven() public view returns (string memory) {
-        if(num1 % 2 == 0) return "Is even"; else return "Is odd";
-    }
-
-    function prime() public view returns (string memory) {
-        if (num2 <= 1) return "Not a prime";
-        for (uint256 i = 2; i < num2; i++) { if (num2 % i == 0) return "Not a prime"; }
-        return "Is prime";
-    }
-
-    function pro() public returns (uint256) { product = num1 * num2; return product; }
-    function bitwiseAnd() public returns (uint256) { andRes = product & 2; return andRes; }
-    function bitwiseOr() public returns (uint256) { orRes = product | 2; return orRes; }
-
-    function finalop() public view returns (string memory) {
-        if(andRes % 2 == 0 && orRes % 2 == 0) return "CONGRATULATIONS, YOU ARE SUCCESSFUL!!!";
-        else return "CONGRATULATIONS, YOU ARE UNSUCCESSFUL!!!";
-    }
-
-    function display() public pure returns(string memory) { 
-        return "Practical performed by Suyog Shah Sathaye - 4"; 
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+🟩 BLUEPRINT 1.1: THE CONDITION CHECKER (Prac 1 - Variables & If/Else)
+Exam Prompt Trigger: "Accept a number/marks from the user and check if they passed or failed / check if it is positive or negative."
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah" ➔ Scope: Main
+ProcessStatus ➔ String ➔ "Completed" ➔ Scope: Main
+UserInput ➔ String ➔ [Empty] ➔ Scope: Main
+Marks ➔ Int32 ➔ 0 ➔ Scope: Main
+2. THE UI CANVAS VIEW:
+
+
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 💬 Message Box: StudentSignature
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 🔤 Input Dialog
+        │    │     Label: "Enter your marks:"
+        │    │     Output: UserInput
+        │    │
+        │    ├─► 🧮 Assign (Type Conversion)
+        │    │     To: Marks
+        │    │     Value: CInt(UserInput.Trim)
+        │    │
+        │    └─► 🔀 If 
+        │          Condition: Marks >= 50
+        │          │
+        │          ├─► THEN 
+        │          │    └─► 💬 Message Box: "Result: Pass"
+        │          │
+        │          └─► ELSE
+        │               └─► 💬 Message Box: "Result: Fail"
+        │
+        ├─► CATCH: [Log Error]
+        └─► FINALLY: 💬 Message Box: ProcessStatus
+
+
+
+🟩 BLUEPRINT 1.2: THE EXACT MATCHER (Prac 2 - Switch Statement)
+Exam Prompt Trigger: "Calculate grades based on specific characters (A, B, C) or create a menu choice system."
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah" ➔ Scope: Main
+ProcessStatus ➔ String ➔ "Completed" ➔ Scope: Main
+GradeInput ➔ String ➔ [Empty] ➔ Scope: Main
+2. THE UI CANVAS VIEW:
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 💬 Message Box: StudentSignature
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 🔤 Input Dialog
+        │    │     Label: "Enter your Grade (A, B, or C):"
+        │    │     Output: GradeInput
+        │    │
+        │    └─► 🔀 Switch 
+        │          Expression: GradeInput.ToUpper
+        │          TypeArgument: String   <-- (CRITICAL: MUST WRITE THIS ON PAPER)
+        │          │
+        │          ├─► Case: "A"
+        │          │    └─► 💬 Message Box: "Excellent"
+        │          │
+        │          ├─► Case: "B"
+        │          │    └─► 💬 Message Box: "Good"
+        │          │
+        │          └─► Default:
+        │               └─► 💬 Message Box: "Invalid Grade or Needs Improvement"
+        │
+        ├─► CATCH: [Log Error]
+        └─► FINALLY: 💬 Message Box: ProcessStatus
+
+
+
+🟩 BLUEPRINT 1.3: THE REPEATER (Prac 2 - While Loop)
+Exam Prompt Trigger: "Print a message 5 times", "Create a counter", or "Repeat a process until a condition is met."
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah" ➔ Scope: Main
+ProcessStatus ➔ String ➔ "Completed" ➔ Scope: Main
+Counter ➔ Int32 ➔ 0 ➔ Scope: Main
+2. THE UI CANVAS VIEW:
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 💬 Message Box: StudentSignature
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 🧮 Assign (Initialization)
+        │    │     To: Counter
+        │    │     Value: 1
+        │    │
+        │    └─► 🔁 While 
+        │          Condition: Counter <= 5
+        │          Body:
+        │          │
+        │          ├─► 💬 Message Box
+        │          │     Text: "This is loop iteration number: " + Counter.ToString
+        │          │
+        │          └─► 🧮 Assign (The Engine - FATAL TRAP IF FORGOTTEN)
+        │                To: Counter
+        │                Value: Counter + 1
+        │
+        ├─► CATCH: [Log Error]
+        └─► FINALLY: 💬 Message Box: ProcessStatus
+
+
+
+🟩 BLUEPRINT 1.4: THE TEXT CHOPPER (Prac 3 - String Manipulation)
+Exam Prompt Trigger: "Extract the first name from a full name", "Count the characters in a string", or "Replace a word."
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah" ➔ Scope: Main
+ProcessStatus ➔ String ➔ "Completed" ➔ Scope: Main
+FullName ➔ String ➔ [Empty] ➔ Scope: Main
+NameArray ➔ Array of String (String[]) ➔ [Empty] ➔ Scope: Main
+2. THE UI CANVAS VIEW:
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 💬 Message Box: StudentSignature
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 🔤 Input Dialog
+        │    │     Label: "Enter your First and Last name (e.g., Suyog Shah):"
+        │    │     Output: FullName
+        │    │
+        │    ├─► 🧮 Assign (String Split)
+        │    │     To: NameArray
+        │    │     Value: FullName.Split(" "c)  <-- (Splits at the space)
+        │    │
+        │    └─► 💬 Message Box
+        │          Text: "Your First Name is: " + NameArray(0) + 
+        │                ". Total characters in full name: " + FullName.Length.ToString
+        │
+        ├─► CATCH: [Log Error]
+        └─► FINALLY: 💬 Message Box: ProcessStatus
+
+
+
+Study these 4 variations. If an examiner asks a combined question (e.g., "Ask for 3 names and check if they are valid"), you simply nest the If (Blueprint 1.1) inside the While (Blueprint 1.3).
+—----------------------------------BLOCK 2: THE EXCEL ARSENAL (The 20-Mark Payload)
+Welcome to the most important phase of your exam. If you blank out on everything else but master Excel automation, you can secure a passing grade. Examiners are obsessed with Excel because it represents 80% of real-world RPA administrative work.
+🧠 Phase 1: The Core Concept (Physical vs. Virtual)
+The biggest trap students fall into is not understanding the difference between the physical Excel file and the bot's memory.
+The Physical File (.xlsx): Sitting on your desktop. The bot uses Excel Process Scope and Use Excel File to "open the door" to this file.
+The Virtual File (DataTable): The bot reads the physical file and creates a temporary copy in its own memory. This is called a DataTable (usually named dt_ExcelData).
+The Workflow: You read the physical file ➔ Pull it into a virtual DataTable ➔ Modify the virtual DataTable using a loop ➔ Push the virtual DataTable back into the physical file.
+🛑 THE EXAM PROMPT (The "Mega Practical")
+Question: "Read an Excel file named 'StudentData.xlsx' which contains columns for 'Name' and 'Marks'. Loop through each student's data. If their marks are 50 or above, update a third column named 'Status' to 'Pass'. If below 50, update it to 'Fail'. Finally, write this updated data into a new sheet named 'FinalResults'."
+This covers Prac 4 (Excel Integration) and seamlessly integrates Block 1 (Loops and If/Else).
+If you can draw this structure, you secure the maximum yield. It proves you know scope, reading, row manipulation, and writing.
+
+🟦 BLUEPRINT 2.1: THE CELL TARGETER (Prac 4 - Read/Write/Append Cell)
+Exam Prompt Trigger: "Read the value from cell A1, append the word 'Approved' to it, and write it back to cell B1."
+The Trap: Students try to use Read Range for everything. If the prompt specifies a single cell, you must use Cell activities to save time and memory.
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+CellValue ➔ String ➔ [Empty]
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 📊 Excel Process Scope 
+        │         │
+        │         └─► 📗 Use Excel File (Path: "Data.xlsx")
+        │              │
+        │              ├─► 🔍 Read Cell
+        │              │     Cell: "A1"
+        │              │     Output: CellValue
+        │              │
+        │              ├─► 🧮 Assign (The Append Logic)
+        │              │     To: CellValue
+        │              │     Value: CellValue + " - Approved"
+        │              │
+        │              └─► ✏️ Write Cell
+        │                    What to write: CellValue
+        │                    Where to write: "B1"
+        │
+        ├─► CATCH: [Log Error]
+
+
+
+🟦 BLUEPRINT 2.2: THE MEMORY BUILDER (Prac 3-B - Build & Add Data Row)
+Exam Prompt Trigger: "Create a Data Table with columns 'EmpID' and 'Name'. Add two employees to it and display the table as text."
+The Trap: There is no Excel file in this question! You are building the table purely in the bot's temporary RAM.
+1. THE VARIABLES:
+dt_Employees ➔ DataTable ➔ [Empty]
+TableString ➔ String ➔ [Empty]
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 🏗️ Build Data Table
+        │    │     Output: dt_Employees
+        │    │     (Action: Click 'DataTable' button -> Create 2 columns: EmpID [Int32], Name [String])
+        │    │
+        │    ├─► ➕ Add Data Row
+        │    │     ArrayRow: {101, "John Doe"}  <-- (CRITICAL SYNTAX: Use curly braces for arrays)
+        │    │     DataTable: dt_Employees
+        │    │
+        │    ├─► ➕ Add Data Row
+        │    │     ArrayRow: {102, "Jane Smith"}
+        │    │     DataTable: dt_Employees
+        │    │
+        │    ├─► 🔀 Output Data Table (Converts the table into readable text)
+        │    │     DataTable: dt_Employees
+        │    │     Text: TableString
+        │    │
+        │    └─► 💬 Message Box
+        │          Text: TableString
+        │
+        ├─► CATCH: [Log Error]
+
+
+
+🟦 BLUEPRINT 2.3: THE FORMAT CONVERTER (Prac 5-A - Text File to Excel)
+Exam Prompt Trigger: "Read a text file named 'clients.txt' containing comma-separated names, convert it into a Data Table, and save it as an Excel file."
+The Trap: This is the ultimate bridge between Block 1 (String Manipulation) and Block 2 (Excel). It tests if you know how to convert raw data into structured rows.
+1. THE VARIABLES:
+RawText ➔ String ➔ [Empty]
+dt_Clients ➔ DataTable ➔ [Empty]
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 📄 Read Text File
+        │    │     FileName: "clients.txt"
+        │    │     Output: RawText
+        │    │
+        │    ├─► ⚙️ Generate Data Table From Text (The Magic Converter)
+        │    │     Input: RawText
+        │    │     ColumnSeparators: ","
+        │    │     NewlineSeparator: Environment.NewLine
+        │    │     DataTable: dt_Clients
+        │    │
+        │    └─► 📊 Excel Process Scope 
+        │         │
+        │         └─► 📗 Use Excel File (Path: "Output.xlsx", Create if not exists: True)
+        │              │
+        │              └─► 💾 Write DataTable to Excel
+        │                    What to write: dt_Clients
+        │                    Destination: Excel.Sheet("Sheet1")
+        │
+        ├─► CATCH: [Log Error]
+
+
+
+🟦 BLUEPRINT 2.4: THE RANGE COPIER (Prac 4-A - Read Range & Write Range)
+Exam Prompt Trigger: "Read all data from 'Sheet1' of an Excel file and create a backup copy in 'Sheet2'."
+The Trap: Do not use a For Each Row loop for this! If you don't need to change the data (no If/Else logic needed), just copy the whole chunk of memory at once.
+1. THE VARIABLES:
+dt_Backup ➔ DataTable ➔ [Empty]
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 📊 Excel Process Scope 
+        │         │
+        │         └─► 📗 Use Excel File (Path: "MasterData.xlsx")
+        │              │
+        │              ├─► 📋 Read Range
+        │              │     Sheet Name: "Sheet1"
+        │              │     Output: dt_Backup
+        │              │
+        │              └─► 💾 Write DataTable to Excel
+        │                    What to write: dt_Backup
+        │                    Destination: Excel.Sheet("Sheet2")  <-- (UiPath will auto-create Sheet2)
+        │
+        ├─► CATCH: [Log Error]
+
+
+🧠 The Strategic Takeaway for Block 2:
+Notice the exact vocabulary used.
+If it says "Specific Cell" ➔ Blueprint 2.1 (Read/Write Cell).
+If it says "Create a Table" (with no input file) ➔ Blueprint 2.2 (Build Data Table).
+If it says "Text file to Excel" ➔ Blueprint 2.3 (Generate Data Table).
+If it says "Copy" or "Move" data ➔ Blueprint 2.4 (Read Range / Write Range).
+If you mix these up (e.g., trying to use Write Cell inside a 10,000-row loop instead of just updating the virtual table and using Write Range), your bot will take 10 minutes to execute, and the examiner will deduct marks for poor optimization.
+Here are the 4 isolated, brutally precise blueprints for Block 3.
+These are your modular snap-ins for any prompt that asks you to handle documents or communication. Memorize the exact variable types and attachment syntax, as examiners grade heavily on them.
+🟧 BLUEPRINT 3.1: THE DIGITAL PDF EXTRACTOR (Prac 8-A - Read PDF Text)
+Exam Prompt Trigger: "Read data from a digital PDF file (e.g., an invoice) and save the text into a .txt file."
+The Trap: This only works on PDFs that have selectable text. If the prompt says "scanned document" or "image," this blueprint will output an empty string and fail.
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+PdfText ➔ String ➔ [Empty]
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 📄 Read PDF Text
+        │    │     FileName: "C:\Exams\Invoice.pdf"
+        │    │     Range: "All"
+        │    │     Output: PdfText
+        │    │
+        │    └─► 📝 Write Text File
+        │          FileName: "C:\Exams\ExtractedData.txt"
+        │          Text: PdfText
+        │
+        ├─► CATCH: [Log Error]
+
+
+
+🟧 BLUEPRINT 3.2: THE SCANNED DOCUMENT READER (Prac 8-C - Read PDF With OCR)
+Exam Prompt Trigger: "Extract text from a scanned PDF or image-based document."
+The Trap: You cannot just drop this activity. It requires an OCR Engine dropped inside the activity to function. If you forget the engine, the bot crashes.
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+OcrText ➔ String ➔ [Empty]
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    ├─► 👁️ Read PDF With OCR
+        │    │     FileName: "C:\Exams\ScannedDoc.pdf"
+        │    │     Range: "All"
+        │    │     Output: OcrText
+        │    │     │
+        │    │     └─► ⚙️ Tesseract OCR (or OmniPage OCR)  <-- (CRITICAL: Dropped inside)
+        │    │           ExtractWords: False
+        │    │           Language: "eng"
+        │    │
+        │    └─► 💬 Message Box
+        │          Text: "Extracted: " + OcrText
+        │
+        ├─► CATCH: [Log Error]
+
+
+
+🟧 BLUEPRINT 3.3: THE OUTBOUND DISPATCHER (Prac 9-A - Send Email with Attachment)
+Exam Prompt Trigger: "Send an email to a specific address with a subject, body, and an attached file."
+The Trap: The syntax for attaching a file using the modern Gmail activities is highly specific. Writing a simple string path will fail.
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 📧 Use Gmail (Account: "your.email@gmail.com")
+        │         │
+        │         └─► 📤 Send Email
+        │               To: "examiner@college.edu"
+        │               Subject: "Practical 9 Submission"
+        │               Body: "Please find the attached report."
+        │               Save as Draft: False
+        │               Attachments: New List(Of IResource) From {LocalResource.FromPath("C:\Exams\Report.pdf")} <-- (FATAL SYNTAX: Memorize this exact structure)
+        │
+        ├─► CATCH: [Log Error]
+
+
+
+🟧 BLUEPRINT 3.4: THE INBOX SCANNER (Prac 9-B - Get Email List)
+Exam Prompt Trigger: "Read the top 5 unread emails from the inbox and process them (e.g., read the subject line or save attachments)."
+The Trap: The output of Get Email List is a collection, not text. You must loop through it. You must also explicitly cast the TypeArgument in the loop.
+1. THE VARIABLES:
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+list_Emails ➔ List<System.Net.Mail.MailMessage> ➔ [Empty]
+2. THE UI CANVAS VIEW:
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 📧 Use Gmail (Account: "your.email@gmail.com")
+        │         │
+        │         ├─► 📥 Get Email List
+        │         │     MailFolder: "Inbox"
+        │         │     UnreadOnly: True
+        │         │     Top: 5
+        │         │     Output: list_Emails
+        │         │
+        │         └─► 🔁 For Each
+        │               TypeArgument: System.Net.Mail.MailMessage  <-- (CRITICAL MENTION)
+        │               Values: list_Emails
+        │               Body:
+        │               │
+        │               ├─► 💬 Message Box
+        │               │     Text: "Subject is: " + item.Subject
+        │               │
+        │               └─► 💾 Save Attachments
+        │                     Message: item
+        │                     FolderPath: "C:\Exams\Downloads"
+        │
+        ├─► CATCH: [Log Error]
+
+
+🧠 Strategic Takeaway for Block 3
+You now have the exact architectural components.
+If they want data out of a document, use Read PDF Text.
+If the document is an image, use Read PDF With OCR.
+If they want data sent, use Send Email (and do not forget the New List(Of IResource) attachment syntax).
+If they want data received, use Get Email List and loop through it with System.Net.Mail.MailMessage.
+This completes the holy trinity of RPA fundamentals (Logic -> Excel -> IO).
+Tell me if you want to run through the Altered Questions for Block 3, or if you want to generate the final condensed Cheat Sheet Table for this block to finalize the 120-minute survival sprint.
+
+🟨 BLUEPRINT 4.1: THE WEB TABLE SCRAPER (Prac 7 - Data Scraping)
+Exam Prompt Trigger: "Extract product details from an e-commerce website and save it as a CSV."
+The Trap: Do not write out HTML tags in the exam. Just indicate <HTML Table Target>.
+
+1. THE VARIABLES:
+
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+
+dt_ExtractedData ➔ DataTable ➔ [Empty]
+
+2. THE UI CANVAS VIEW:
+
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 🌐 Use Application/Browser
+        │         URL: "https://www.example.com/products"
+        │         │
+        │         ├─► 🕸️ Extract Table Data (Data Scraping)
+        │         │     Target: <HTML Table>
+        │         │     MaxNumberOfResults: 100
+        │         │     Output: dt_ExtractedData
+        │         │
+        │         └─► 📝 Write CSV
+        │               FilePath: "C:\Exams\ScrapedProducts.csv"
+        │               DataTable: dt_ExtractedData
+        │
+        ├─► CATCH: [Log Error]
+🟨 BLUEPRINT 4.2: THE SINGLE TEXT GRABBER (Prac 7-C - Get Text)
+Exam Prompt Trigger: "Open a college website and extract just the main headline or a specific notice."
+
+1. THE VARIABLES:
+
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+
+HeadlineText ➔ String ➔ [Empty]
+
+2. THE UI CANVAS VIEW:
+
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 🌐 Use Application/Browser
+        │         URL: "https://www.sathayecollege.edu.in"
+        │         │
+        │         ├─► 🔠 Get Text
+        │         │     Target: <H1 Header Element>
+        │         │     Output: HeadlineText
+        │         │
+        │         └─► 💬 Message Box
+        │               Text: "Extracted Headline: " + HeadlineText
+        │
+        ├─► CATCH: [Log Error]
+🟥 BLOCK 5: UI & SYSTEM EVENTS
+🟥 BLUEPRINT 5.1: THE AUTO-LOGIN (Prac 5-B - Basic UI Automation)
+Exam Prompt Trigger: "Automate the login process for a desktop application or website using credentials."
+The Trap: Always use "SecureText" or explicitly state it's a password field if the examiner asks for secure practices.
+
+1. THE VARIABLES:
+
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+
+2. THE UI CANVAS VIEW:
+
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 🪟 Use Application/Browser
+        │         Application Path / URL: "C:\App\Login.exe"
+        │         │
+        │         ├─► ⌨️ Type Into
+        │         │     Target: <Username Field>
+        │         │     Text: "AdminUser"
+        │         │
+        │         ├─► ⌨️ Type Into (Secure)
+        │         │     Target: <Password Field>
+        │         │     Text: "Pass123!"
+        │         │
+        │         └─► 🖱️ Click
+        │               Target: <Login Button>
+        │               ClickType: CLICK_SINGLE
+        │
+        ├─► CATCH: [Log Error]
+🟥 BLUEPRINT 5.2: THE STATE CHECKER (Prac 5-C - Check App State)
+Exam Prompt Trigger: "Check if an error popup appears. If it does, close it. If it doesn't, continue processing."
+The Trap: This is Block 1 logic (If/Else) tied to UI elements. It is highly prone to failing if the screen resolution changes.
+
+1. THE VARIABLES:
+
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+
+2. THE UI CANVAS VIEW:
+
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► 🔎 Check App State
+        │         Target: <Error Popup Window>
+        │         Timeout (Seconds): 5
+        │         │
+        │         ├─► Target Appears (THEN)
+        │         │    └─► 🖱️ Click
+        │         │          Target: <Close 'X' Button>
+        │         │
+        │         └─► Target Does Not Appear (ELSE)
+        │              └─► 📝 Log Message
+        │                    Message: "No error popup. Proceeding."
+        │
+        ├─► CATCH: [Log Error]
+🟥 BLUEPRINT 5.3: THE EVENT LISTENER (Prac 6 - Trigger Scope)
+Exam Prompt Trigger: "Build a bot that runs in the background and only executes when the user presses 'Alt+S' or clicks a specific image."
+The Trap: Triggers run infinitely until stopped. They must be wrapped inside a Trigger Scope.
+
+1. THE VARIABLES:
+
+StudentSignature ➔ String ➔ "Practical by Suyog Shah"
+
+2. THE UI CANVAS VIEW:
+
+Plaintext
+▼ Sequence: Main_Exam_Answer
+  │
+  ├─► 🛡️ Try Catch
+        │
+        ├─► TRY 
+        │    │
+        │    └─► ⚡ Trigger Scope
+        │         │
+        │         ├─► Triggers (What to listen for):
+        │         │    └─► ⌨️ Keypress Trigger
+        │         │          Key: "S"
+        │         │          Modifiers: Alt
+        │         │
+        │         └─► Actions (What to do when triggered):
+        │              └─► 💬 Message Box
+        │                    Text: "Alt+S detected! Executing background task..."
+        │
+        ├─► CATCH: [Log Error]
